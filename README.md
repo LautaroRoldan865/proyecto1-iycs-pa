@@ -1,8 +1,8 @@
-# Proyecto 1 - IyCS PA
+# Proyecto 1 - Ingeniería y Calidad de Software - Programación Avanzada
 
 Sistema de gestión web full-stack para una distribuidora: administración de productos, clientes, proveedores, personal y usuarios, con generación de documentos (PDF / Excel) y OCR.
 
-Proyecto académico de la materia **Ingeniería y Calidad de Software**.
+Proyecto académico de la materia **Ingeniería y Calidad de Software | Programación Avanzada**.
 
 🔗 **Demo:** https://proyecto1-iycs-pa.vercel.app
 
