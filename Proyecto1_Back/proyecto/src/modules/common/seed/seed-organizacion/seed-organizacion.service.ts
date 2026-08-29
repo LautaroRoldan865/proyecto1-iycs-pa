@@ -93,7 +93,7 @@ export class SeedOrganizacionService {
 
     for (const data of entryData) {
       const exists = await this.provinciaRepository.findOneBy({
-        denominacion: data.denominacion,
+        denominacion: data.denominacion.toUpperCase(),
       });
 
       if (!exists) {
@@ -183,7 +183,7 @@ No se les ocurra sacar primero a bell ville
 
     for (const data of entryData) {
       const provincia = await this.provinciaRepository.findOneBy({
-        denominacion: data.provincia,
+        denominacion: data.provincia.toUpperCase(),
       });
 
       if (!provincia) {
@@ -192,7 +192,7 @@ No se les ocurra sacar primero a bell ville
       }
 
       const exists = await this.localidadRepository.findOneBy({
-        denominacion: data.localidad,
+        denominacion: data.localidad.toUpperCase(),
         provincia: provincia,
       });
 
@@ -281,7 +281,7 @@ No se les ocurra sacar primero a bell ville
 
     for (const data of entryData) {
       const exists = await this.condicionIVARepository.findOneBy({
-        denominacion: data.denominacion,
+        denominacion: data.denominacion.toUpperCase(),
       });
 
       if (!exists) {
@@ -334,7 +334,7 @@ No se les ocurra sacar primero a bell ville
 
     for (const data of entryData) {
       const exists = await this.empresaRepository.findOneBy({
-        denominacion: data.denominacion,
+        denominacion: data.denominacion.toUpperCase(),
       });
 
       if (!exists) {
@@ -350,7 +350,7 @@ No se les ocurra sacar primero a bell ville
         }
 
         const categoriaIva = await this.condicionIVARepository.findOneBy({
-          denominacion: data.categoriaIva,
+          denominacion: data.categoriaIva.toUpperCase(),
         });
 
         if (!categoriaIva) {
@@ -394,7 +394,7 @@ No se les ocurra sacar primero a bell ville
 
     for (const data of entryData) {
       const categoriaIva = await this.condicionIVARepository.findOneBy({
-        denominacion: data.categoriaIva,
+        denominacion: data.categoriaIva.toUpperCase(),
       });
 
       if (!categoriaIva) {
@@ -405,7 +405,7 @@ No se les ocurra sacar primero a bell ville
       }
 
       const localidad = await this.localidadRepository.findOneBy({
-        denominacion: data.localidad,
+        denominacion: data.localidad.toUpperCase(),
       });
 
       if (!localidad) {
@@ -625,7 +625,7 @@ async seedPersonal() {
 
     for (const data of entryData) {
       const categoriaIva = await this.condicionIVARepository.findOneBy({
-        denominacion: data.categoriaIva,
+        denominacion: data.categoriaIva.toUpperCase(),
       });
 
       if (!categoriaIva) {
@@ -636,7 +636,7 @@ async seedPersonal() {
       }
 
       const localidad = await this.localidadRepository.findOneBy({
-        denominacion: data.localidad,
+        denominacion: data.localidad.toUpperCase(),
       });
 
       if (!localidad) {
@@ -743,7 +743,7 @@ async seedPersonal() {
 
     for (const data of entryData) {
       const exists = await this.condicionIVARepository.findOneBy({
-        denominacion: data.denominacion,
+        denominacion: data.denominacion.toUpperCase(),
       });
 
       if (!exists) {
