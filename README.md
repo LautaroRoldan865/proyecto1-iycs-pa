@@ -7,7 +7,7 @@ Proyecto académico de la materia **Ingeniería y Calidad de Software**.
 🔗 **Demo:** https://proyecto1-iycs-pa.vercel.app
 
 ---
-## 👥 Integrantes
+## Integrantes
 
 | **Estudiantes** | **Nro. Legajo** | **Correo Electrónico** |
 |-----------------|-----------------|------------------------|
