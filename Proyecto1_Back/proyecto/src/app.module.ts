@@ -46,9 +46,12 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       // Las entidades se registran automáticamente cuando usás
       // TypeOrmModule.forFeature([Entidad]) en tus módulos
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      // entities,
+      //entities,
       synchronize: false,  
-      ssl: process.env.DB_SSL === 'true',
+      //ssl: process.env.DB_SSL === 'true',
+      ssl: {
+        rejectUnauthorized: true,
+      },
     }),
 
     MarcaModule,
