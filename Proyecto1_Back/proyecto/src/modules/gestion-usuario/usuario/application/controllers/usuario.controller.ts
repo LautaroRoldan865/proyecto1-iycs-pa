@@ -96,7 +96,6 @@ export class UsuarioController {
     this.logger.log(`Buscando usuarios con mail: ${denominacion}`);
     return this.service.findByMailFiltered(denominacion, skip, take);
   }
-
  
   @Patch('cambiar-contrasena/:id')
   async cambiarContrasena(

@@ -21,6 +21,11 @@ import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/pr
 
 @Entity('producto')
 export class Producto {
+
+  constructor(){
+
+  }
+
   @ApiProperty()
   @PrimaryGeneratedColumn()
   id: number;
@@ -149,12 +154,13 @@ export class Producto {
   @Column({ type: 'int', nullable: true })
   marcaId?: number;
 
-
+  /* ESTOS LOS SACARIAMOS PARA PODER REPRESENTARLOS EN PRESENTACION (VO)
   @Column({ default: false })
   utilizaPack: boolean;
 
   @Column({ type: 'int', nullable: true })
   cantidadPorPack: number | null;
+  */
 
   @Column({ type: 'text', nullable: true })
   imagen?: string;
