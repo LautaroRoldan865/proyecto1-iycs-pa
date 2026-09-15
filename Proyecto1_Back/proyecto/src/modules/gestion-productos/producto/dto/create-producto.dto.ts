@@ -1,4 +1,5 @@
-import { Transform } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -9,8 +10,10 @@ import {
   IsNumber,
   IsInt,
   IsEnum,
+  ValidateNested,
 } from 'class-validator';
 import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
+import { CreatePresentacionDto } from './create-presentacion.dto';
 
 export class CreateProductoDto {
   @Transform(({ value }) => value.trim().toLowerCase())
@@ -125,5 +128,10 @@ export class CreateProductoDto {
   @IsInt({ message: 'El usuarioCreatedId debe ser un número entero.' })
   usuarioCreatedId: number;
 
+  @ApiPropertyOptional({ type: () => CreatePresentacionDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreatePresentacionDto)
+  presentacion: CreatePresentacionDto;
 
 }

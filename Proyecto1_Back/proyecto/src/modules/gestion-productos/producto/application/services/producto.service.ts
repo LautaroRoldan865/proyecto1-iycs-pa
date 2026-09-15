@@ -27,6 +27,7 @@ import { ProductoRelatedEntitiesValidator } from '../../infraestructure/validato
 import { ProductoUniquenessValidator } from '../../infraestructure/validators/producto-uniqueness.validator.ts';
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
+import { presentacionService } from './presentacion.service';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -34,6 +35,7 @@ export class ProductoService {
     @Inject('IProductoRepository')
     private readonly repository: IProductoRepository,
     private readonly lineaService: LineaService,
+    private readonly presentacionService: presentacionService,
 
     @Inject(forwardRef(() => MarcaService))
     private readonly marcaService: MarcaService,
@@ -65,12 +67,13 @@ export class ProductoService {
       await this.validarYPrepararCreacion(dto);
 
 
+    const presentacion = await this.presentacionService.ejecutar(dto.presentacion);
 
     const entity = await this.repository.create(
       dto,
       linea,
       marca,
-
+      presentacion,
       usuario,
     );
 
@@ -84,15 +87,17 @@ export class ProductoService {
   async update(id: number, dto: UpdateProductoDto) {
     this.logger.log(`Actualizandox  ${this.ENTITY_NAME} con ID: ${id}`);
 
-    const { marca, linea, usuario } =
+    const { marca, linea,  usuario } =
       await this.validarYPrepararActualizacion(id, dto);
 
+    const presentacion = await this.presentacionService.ejecutar(dto.presentacion!);
+  
     const entity = await this.repository.update(
       id,
       dto,
       linea,
       marca,
-
+      presentacion,
       usuario,
     );
 
@@ -342,8 +347,7 @@ export class ProductoService {
     //  Validar reglas de negocio sobre entidades (Domain)
     this.validationService.validarEntidadesRelacionadas(
       marca,
-      linea,
-
+      linea
     );
 
 
@@ -405,7 +409,6 @@ export class ProductoService {
     this.validationService.validarEntidadesRelacionadas(
       marca,
       linea,
-
     );
 
     // 5 Validar usuario
