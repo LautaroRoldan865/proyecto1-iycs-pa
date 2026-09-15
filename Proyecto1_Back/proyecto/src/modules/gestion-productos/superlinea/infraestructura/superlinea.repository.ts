@@ -5,6 +5,7 @@ import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UpdateSuperLineaDto } from "../dto/update-superlinea.dto";
 import { CreateSuperLineaDto } from "../dto/create-superlinea.dto";
+import { IUnitOfWork } from "src/modules/common/unit-of-work/iunit-of-work.";
 
 @Injectable()
 export class SuperLineaRepository implements ISuperLineaRepository{
@@ -16,14 +17,11 @@ export class SuperLineaRepository implements ISuperLineaRepository{
         private readonly superLineaRepository: Repository<SuperLinea>
     ){}
     
-    async create( data: CreateSuperLineaDto):Promise<SuperLinea> {
-        try{
-            const newSuperLinea = this.superLineaRepository.create(data);
-            newSuperLinea.createdAt = new Date();
-            return await this.superLineaRepository.save(newSuperLinea);
-        } catch (error) {
-            throw new InternalServerErrorException("Error al crear la superlinea")
-        }
+    async create( data: CreateSuperLineaDto, uow?: IUnitOfWork):Promise<SuperLinea> {
+        const repo = uow ? uow.getRepository(SuperLinea) : this.superLineaRepository;
+
+        const newSuperlinea = repo.create(data);
+        return await repo.save(newSuperlinea)
     };
 
     async update( id:number, data: UpdateSuperLineaDto): Promise<SuperLinea>{
