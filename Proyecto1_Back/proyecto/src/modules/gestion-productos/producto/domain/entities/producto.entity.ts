@@ -154,13 +154,12 @@ export class Producto {
   @Column({ type: 'int', nullable: true })
   marcaId?: number;
 
-  /* ESTOS LOS SACARIAMOS PARA PODER REPRESENTARLOS EN PRESENTACION (VO)
   @Column({ default: false })
   utilizaPack: boolean;
 
   @Column({ type: 'int', nullable: true })
   cantidadPorPack: number | null;
-  */
+
 
   @Column({ type: 'text', nullable: true })
   imagen?: string;
