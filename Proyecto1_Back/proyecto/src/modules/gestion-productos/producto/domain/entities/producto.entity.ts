@@ -18,14 +18,10 @@ import { MonetarioColumn } from 'src/modules/common/decorators/monetario-column.
 import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
 import { PorcentajeColumn } from 'src/modules/common/decorators/porcentaje-column.decorator';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
+import { Presentacion } from './presentacion.entity';
 
 @Entity('producto')
 export class Producto {
-
-  constructor(){
-
-  }
-
   @ApiProperty()
   @PrimaryGeneratedColumn()
   id: number;
@@ -73,7 +69,7 @@ export class Producto {
   stockMinimo: number;
 
   @MonetarioColumn()
-  costo?: number;
+  costo: number;
 
   @MonetarioColumn()
   costoDolar?: number;
@@ -89,11 +85,8 @@ export class Producto {
   precioDolar?: number;
   // Precio de venta
 
-  @MonetarioColumn()
-  precio?: number;
-
   @PorcentajeColumn()
-  porcentaje?: number;
+  margen: number;
 
   @Column({ type: 'timestamp', nullable: true })
   fechaCosto?: Date;
@@ -178,4 +171,13 @@ export class Producto {
 
   @Column({ type: 'text', nullable: true })
   codigoReferencia?: string | null;
+
+  // ========== Presentacion ==========
+  @ManyToOne(()=> Presentacion, (presentacion) => presentacion.productos,{cascade:true, eager:true, nullable:true})
+  @JoinColumn({ name: 'presentacion_id' })
+  @Index()
+  presentacion?:Presentacion;
+
+  @Column({ type: 'int', nullable: true })
+  presentacionId?: number;
 }

@@ -32,11 +32,15 @@ export class Linea {
   productos: Producto[];
 
   @ManyToOne(() => SuperLinea, (superlinea) => superlinea.lineas, {
-    eager:true
+    eager:true, 
+    nullable:true,
   })
   @JoinColumn({name:'superlinea_id'})
   @Index()
-  superlinea: SuperLinea
+  superlinea?: SuperLinea;
+
+  @Column({ type: 'int', nullable: true })
+  superlineaId?: number;
 
   @Column('boolean', { default: false })
   utilizaStockMinimo: boolean;
