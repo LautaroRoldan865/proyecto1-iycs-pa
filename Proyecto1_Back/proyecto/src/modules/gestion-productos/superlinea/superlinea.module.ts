@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { SuperlineaController } from './application/superlinea.controller';
-import { SuperlineaService } from './superlinea.service';
+
 import { LineaModule } from '../linea/linea.module';
 import { SuperLinea } from './domain/entities/superlinea.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SuperLineaRepository } from './infraestructura/superlinea.repository';
+import { SuperlineaController } from './application/controller/superlinea.controller';
+import { SuperlineaService } from './application/service/superlinea.service';
 
 @Module({
   imports:[
