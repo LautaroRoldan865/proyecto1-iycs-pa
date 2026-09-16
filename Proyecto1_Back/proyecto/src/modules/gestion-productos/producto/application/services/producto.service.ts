@@ -28,6 +28,7 @@ import { ProductoUniquenessValidator } from '../../infraestructure/validators/pr
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
 import { PresentacionService } from './presentacion.service';
+import { GeneradorDenominacionService } from '../../domain/services/generador-denominacion.service';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -45,6 +46,7 @@ export class ProductoService {
     //  Domain Services
     private readonly intrinsicValidationService: ProductoIntrinsicValidationService,
     private readonly validationService: ProductoValidationService,
+    private readonly generadorDenominacionService: GeneradorDenominacionService,
 
     // Infrastructure Validators
     private readonly relatedEntitiesValidator: ProductoRelatedEntitiesValidator,
@@ -419,5 +421,15 @@ export class ProductoService {
     return { marca, linea, usuario };
   }
 
+
+  async generarDenominacionAutomatica(dto: CreateProductoDto){
+    const marca = await this.marcaService.findEntityById(dto.marcaId);
+    const linea = await this.lineaService.findEntityById(dto.lineaId);
+    //busca presentación, si no existe la crea
+    const presentacion = await this.presentacionService.ejecutar(dto.presentacion);
+
+    return this.generadorDenominacionService.generar(marca, linea, presentacion);
+
+  }
 
 }

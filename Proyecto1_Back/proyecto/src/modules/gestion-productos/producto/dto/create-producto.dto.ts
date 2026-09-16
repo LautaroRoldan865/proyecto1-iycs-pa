@@ -18,7 +18,9 @@ import { CreatePresentacionDto } from './create-presentacion.dto';
 export class CreateProductoDto {
   @Transform(({ value }) => value.trim().toLowerCase())
   @IsString({ message: 'La denominación debe ser una cadena de texto.' }) // Valida que sea string
-  @IsNotEmpty({ message: 'La denominación no puede estar vacía.' }) // Valida que no esté vacía
+  //lo comento por ahora, porque se supone que al generarla automáticamente puede ser opcional que venga esto -mili
+  //@IsNotEmpty({ message: 'La denominación no puede estar vacía.' }) // Valida que no esté vacía
+  @IsOptional()
   @MaxLength(255, { message: 'La denominación no puede estar vacía.' })
   /*  @Matches(/^[A-Za-z0-9 áéíóúÁÉÍÓÚñÑ.\-/]+$/, {
     message:
@@ -92,6 +94,10 @@ export class CreateProductoDto {
   @IsNotEmpty({ message: 'La marca es obligatoria.' })
   @IsInt({ message: 'La marca  debe ser un número entero.' })
   marcaId: number;
+
+  @IsNotEmpty({ message: 'La presentación es obligatoria.' })
+  @IsInt({ message: 'La presentación  debe ser un número entero.' })
+  presentacionId:number;
 
 
   @IsNotEmpty({ message: 'El margen es obligatorio.' })

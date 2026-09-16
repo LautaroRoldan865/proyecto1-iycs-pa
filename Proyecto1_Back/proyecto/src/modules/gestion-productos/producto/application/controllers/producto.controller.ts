@@ -51,6 +51,11 @@ export class ProductoController {
     return this.service.create(createDto);
   }
   
+  @Post('denominacion-automatica')
+  async generarDenominacionAutomatica(@Body() dto: CreateProductoDto){
+    return this.service.generarDenominacionAutomatica(dto);
+  }
+
   @Get('find-all-for-marcas/select')
   @Roles(
     'Root',
@@ -192,4 +197,6 @@ export class ProductoController {
     const data = await this.service.findByIdConAuditoria(id);
     return data;
   }
+
+
 }
