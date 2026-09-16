@@ -14,7 +14,7 @@ export class ProductoMapper {
   private static readonly logger = new Logger(ProductoMapper.name);
 
   static toBusquedaDto(entity: Producto): GetProductoDto {
-    const precio = entity.precio ?? 0;
+    const precio = entity.costo + (entity.costo *(entity.margen/100));
     const alicuota = entity.alicuotaIva ?? 0;
 
     return {
@@ -37,10 +37,8 @@ export class ProductoMapper {
       ubicacion: entity.ubicacion ?? '',
 
       utilizaStockMinimo: entity.utilizaStockMinimo,
-
       stockMinimo: entity.stockMinimo,
-      utilizaPack: entity.utilizaPack,
-      cantidadPorPack: entity.cantidadPorPack ?? 0,
+      presentacion:entity.presentacion ? `${entity.presentacion.cantidad} ${entity.presentacion.unidad}`: '',
       sistema: entity.sistema,
       codigoReferencia: entity.codigoReferencia ?? '',
 
@@ -67,7 +65,6 @@ export class ProductoMapper {
   static toDto(entity: Producto): ProductoDto {
    
     const alicuota = entity.alicuotaIva ?? 0;
-    const precio = entity.precio ?? 0;
 
     return {
       id: entity.id,
@@ -77,8 +74,8 @@ export class ProductoMapper {
       codigoBarra: entity.codigoBarra ?? '',
       stock: entity.stock ?? 0,
       costo: entity.costo ?? 0,
-      precio: entity.precio ?? 0,
-      porcentaje: entity.porcentaje ?? 0,
+      precio: entity.costo + (entity.costo *(entity.margen/100)),
+      margen: entity.margen ?? 0,
       costoEnDolar: entity.costoEnDolar ?? false,
       costoDolar: entity.costoDolar ?? 0,
       cotizacionDolar: entity.cotizacionDolar ?? 0,
@@ -93,12 +90,10 @@ export class ProductoMapper {
       ubicacion: entity.ubicacion ?? '',
       utilizaStockMinimo: entity.utilizaStockMinimo ?? false,
       stockMinimo: entity.stockMinimo ?? 0,
-      utilizaPack: entity.utilizaPack ?? false,
-      cantidadPorPack: entity.cantidadPorPack ?? 0,
+      presentacion: entity.presentacion? {id: entity.presentacion.id, cantidad:entity.presentacion.cantidad, unidad: entity.presentacion.unidad}:null,
       sistema: entity.sistema,
       codigoReferencia: entity.codigoReferencia ?? '',
 
-    
       
     };
   }

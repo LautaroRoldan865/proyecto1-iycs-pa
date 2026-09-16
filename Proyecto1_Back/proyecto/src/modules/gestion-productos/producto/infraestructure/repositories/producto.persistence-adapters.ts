@@ -14,6 +14,7 @@ import { CreateProductoDto } from '../../dto/create-producto.dto';
 import { UpdatePrecioDto } from '../../dto/update-precio.dto';
 import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
+import { Presentacion } from '../../domain/entities/presentacion.entity';
 
 
 @Injectable()
@@ -35,6 +36,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     data: CreateProductoDto,
     linea: Linea,
     marca: Marca,
+    presentacion:Presentacion,
     usuario: Usuario,
   ): Promise<Producto> {
     const repo = this.uow.getRepository(Producto);
@@ -46,12 +48,14 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       // Verificar que todos los objetos relacionados existan
       this.logger.debug('Linea:', linea);
       this.logger.debug('Marca:', marca);
+       this.logger.debug('Presentacion:', presentacion);
       this.logger.debug('Usuario:', usuario);
 
       const nuevaEntity = repo.create({
         ...data,
         linea,
         marca,
+        presentacion,
         usuarioCreated: usuario,
       });
 
@@ -160,7 +164,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     data: UpdateProductoDto,
     linea: Linea,
     marca: Marca,
-
+    presentacion:Presentacion,
     usuario: Usuario,
   ): Promise<Producto> {
     const repo = this.uow.getRepository(Producto);
@@ -178,6 +182,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       Object.assign(entity, dataSinItems, {
         linea,
         marca,
+        presentacion
       });
 
       entity.usuarioUpdated = usuario; 

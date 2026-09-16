@@ -6,6 +6,7 @@ import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { UpdatePrecioDto } from '../../dto/update-precio.dto';
+import { Presentacion } from '../entities/presentacion.entity';
 
 export interface IProductoRepository {
 
@@ -13,6 +14,7 @@ export interface IProductoRepository {
     data: CreateProductoDto,
     linea: Linea,
     marca: Marca,
+    presentacion:Presentacion,
     usuario: Usuario,
   ): Promise<Producto>;
 
@@ -48,6 +50,7 @@ export interface IProductoRepository {
     data: UpdateProductoDto,
     linea: Linea,
     marca: Marca,
+    presentacion:Presentacion,
     usuario: Usuario,
   ): Promise<Producto>;
 
