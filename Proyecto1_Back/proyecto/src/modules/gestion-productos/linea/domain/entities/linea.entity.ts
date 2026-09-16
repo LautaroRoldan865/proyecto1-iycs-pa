@@ -39,6 +39,9 @@ export class Linea {
   @Index()
   superlinea?: SuperLinea;
 
+  @Column({ type: 'int', nullable: true })
+  superlineaId?: number;
+
   @Column('boolean', { default: false })
   utilizaStockMinimo: boolean;
 
