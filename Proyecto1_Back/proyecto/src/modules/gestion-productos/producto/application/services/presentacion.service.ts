@@ -1,12 +1,13 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { IPresentacionRepository } from "../../domain/interfaces/presentacion.repository-interface";
 import { CreatePresentacionDto } from "../../dto/create-presentacion.dto";
 import { Presentacion } from "../../domain/entities/presentacion.entity";
 
 @Injectable()
-export class presentacionService{
+export class PresentacionService{
     
   constructor(
+    @Inject('IPresentacionRepository')
     private readonly presentacionRepository: IPresentacionRepository,
   ) {}
 
