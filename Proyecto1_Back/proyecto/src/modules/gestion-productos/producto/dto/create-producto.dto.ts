@@ -16,7 +16,8 @@ import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
 import { CreatePresentacionDto } from './create-presentacion.dto';
 
 export class CreateProductoDto {
-  @Transform(({ value }) => value.trim().toLowerCase())
+  //el transform le saco el .toLowerCase() -> Si no no se cumple el CA-005.3 y CA-005.4,
+  @Transform(({ value }) => value.trim())
   @IsString({ message: 'La denominación debe ser una cadena de texto.' }) // Valida que sea string
   //lo comento por ahora, porque se supone que al generarla automáticamente puede ser opcional que venga esto -mili
   //@IsNotEmpty({ message: 'La denominación no puede estar vacía.' }) // Valida que no esté vacía
