@@ -48,7 +48,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       // Verificar que todos los objetos relacionados existan
       this.logger.debug('Linea:', linea);
       this.logger.debug('Marca:', marca);
-       this.logger.debug('Presentacion:', presentacion);
+      this.logger.debug('Presentacion:', presentacion);
       this.logger.debug('Usuario:', usuario);
 
       const nuevaEntity = repo.create({
@@ -84,6 +84,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
         .createQueryBuilder('producto')
         .leftJoinAndSelect('producto.linea', 'linea')
         .leftJoinAndSelect('producto.marca', 'marca')
+        .leftJoinAndSelect('producto.presentacion', 'presentacion')
         .where('producto.id = :id', { id })
         .andWhere('producto.deletedAt IS NULL')
         .getOne();

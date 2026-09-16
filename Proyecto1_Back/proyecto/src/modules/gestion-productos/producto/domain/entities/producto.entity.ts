@@ -168,5 +168,8 @@ export class Producto {
   @ManyToOne(()=> Presentacion, (presentacion) => presentacion.productos,{cascade:true, eager:true, nullable:true})
   @JoinColumn({ name: 'presentacion_id' })
   @Index()
-  presentacion?:Presentacion|null;
+  presentacion?:Presentacion;
+
+  @Column({ type: 'int', nullable: true })
+  presentacionId?: number;
 }

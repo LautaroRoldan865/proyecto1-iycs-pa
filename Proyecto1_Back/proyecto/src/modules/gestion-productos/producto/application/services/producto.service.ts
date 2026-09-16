@@ -27,7 +27,7 @@ import { ProductoRelatedEntitiesValidator } from '../../infraestructure/validato
 import { ProductoUniquenessValidator } from '../../infraestructure/validators/producto-uniqueness.validator.ts';
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
-import { presentacionService } from './presentacion.service';
+import { PresentacionService } from './presentacion.service';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -35,7 +35,7 @@ export class ProductoService {
     @Inject('IProductoRepository')
     private readonly repository: IProductoRepository,
     private readonly lineaService: LineaService,
-    private readonly presentacionService: presentacionService,
+    private readonly presentacionService: PresentacionService,
 
     @Inject(forwardRef(() => MarcaService))
     private readonly marcaService: MarcaService,

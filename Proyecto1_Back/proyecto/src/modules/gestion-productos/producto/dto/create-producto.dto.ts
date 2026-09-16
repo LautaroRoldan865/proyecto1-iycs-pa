@@ -80,13 +80,6 @@ export class CreateProductoDto {
   @IsNumber()
   costo?: number;
 
-  @IsBoolean()
-  utilizaPack: boolean;
-
-  @IsOptional()
-  @IsInt()
-  cantidadPorPack?: number;
-
   @IsOptional()
   @IsNumber()
   costoDolar?: number;
@@ -101,13 +94,9 @@ export class CreateProductoDto {
   marcaId: number;
 
 
-  @IsOptional()
+  @IsNotEmpty({ message: 'El margen es obligatorio.' })
   @IsNumber()
-  porcentaje?: number;
-
-  @IsOptional()
-  @IsNumber()
-  precio: number;
+  margen: number;
 
   createdAt?: Date;
 

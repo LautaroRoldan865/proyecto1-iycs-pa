@@ -92,6 +92,7 @@ export class LineaPersistenceAdapter
     try {
       const entity = await this.repository
         .createQueryBuilder('linea')
+        .leftJoinAndSelect('linea.superlinea', 'superlinea')
         .where('linea.id = :id', { id })
         .andWhere('linea.deletedAt IS NULL')
         .getOne();

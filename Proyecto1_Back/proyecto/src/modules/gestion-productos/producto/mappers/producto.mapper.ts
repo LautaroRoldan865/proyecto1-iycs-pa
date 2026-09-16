@@ -6,6 +6,7 @@ import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usu
 import { ProductoDto } from '../dto/producto.dto';
 
 import {
+  toPresentacionDto,
   toReferenciaDto,
 } from 'src/modules/common/utils/mappers/referencia.mapper';
 
@@ -65,7 +66,9 @@ export class ProductoMapper {
   static toDto(entity: Producto): ProductoDto {
    
     const alicuota = entity.alicuotaIva ?? 0;
-
+    console.log('PRODUCTO:', entity);
+    console.log('PRESENTACION:', entity.presentacion);
+    console.log('PRESENTACION ID:', entity.presentacion?.id);
     return {
       id: entity.id,
       denominacion: entity.denominacion,
@@ -90,7 +93,7 @@ export class ProductoMapper {
       ubicacion: entity.ubicacion ?? '',
       utilizaStockMinimo: entity.utilizaStockMinimo ?? false,
       stockMinimo: entity.stockMinimo ?? 0,
-      presentacion: entity.presentacion? {id: entity.presentacion.id, cantidad:entity.presentacion.cantidad, unidad: entity.presentacion.unidad}:null,
+      presentacion: toPresentacionDto(entity.presentacion)?? null,
       sistema: entity.sistema,
       codigoReferencia: entity.codigoReferencia ?? '',
 
