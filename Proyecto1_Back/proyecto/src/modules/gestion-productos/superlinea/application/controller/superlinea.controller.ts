@@ -7,7 +7,6 @@ import { Roles } from 'src/modules/gestion-usuario/auth/roles.decorator';
 import { CreateSuperLineaDto } from '../../dto/create-superlinea.dto';
 import { SuperLineaDto } from '../../dto/superlinea.dto';
 import { UpdateSuperLineaDto } from '../../dto/update-superlinea.dto';
-import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 
 @ApiTags('Gestion Productos')
 @Controller('superlinea')
