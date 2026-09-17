@@ -19,11 +19,15 @@ import { ProductoRelatedEntitiesValidator } from './infraestructure/validators/p
 import { ProductoValidationService } from './domain/services/producto-validation.service.ts';
 import { ProductoIntrinsicValidationService } from './domain/services/producto-intrinsic-validation.service.ts';
 import { ProductoDeletePolicy } from './application/policies/producto-delete.policy';
+import { PresentacionService } from './application/services/presentacion.service';
+import { PresentacionRepository } from './infraestructure/repositories/presentacion.repository';
+import { Presentacion } from './domain/entities/presentacion.entity';
+import { GeneradorDenominacionService } from './domain/services/generador-denominacion.service';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Producto]),
+    TypeOrmModule.forFeature([Producto, Presentacion]),
     CommonModule,
     forwardRef(() => LineaModule),
     forwardRef(() => MarcaModule),
@@ -40,7 +44,12 @@ import { ProductoDeletePolicy } from './application/policies/producto-delete.pol
     ProductoRelatedEntitiesValidator,
     ProductoUniquenessValidator,
     ProductoDeletePolicy,
-
+    GeneradorDenominacionService,
+    PresentacionService,
+      {
+      provide: 'IPresentacionRepository',
+      useClass: PresentacionRepository,
+    },
     {
       provide: 'IProductoRepository',
       useClass: ProductoRepository,

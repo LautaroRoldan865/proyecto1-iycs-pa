@@ -5,6 +5,7 @@ import { MarcaModule } from './modules/gestion-productos/marca/marca.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LineaModule } from './modules/gestion-productos/linea/linea.module';
 import { ProductoModule } from './modules/gestion-productos/producto/producto.module';
+import { SuperlineaModule } from './modules/gestion-productos/superlinea/superlinea.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProveedorModule } from './modules/organizacion/proveedor/proveedor.module';
 import { PersonalModule } from './modules/organizacion/personal/personal.module';
@@ -47,13 +48,17 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       // TypeOrmModule.forFeature([Entidad]) en tus módulos
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
-      synchronize: false,  
-      // Solo inyecta el objeto ssl si DB_SSL='true'
-      ...(process.env.DB_SSL === 'true' ? { ssl: { rejectUnauthorized: false } } : {})
+      synchronize: true,  
+      //descomentar ssl: process.env.DB_SSL === 'true' | comentar para probarlo en local -mili
+      ssl: process.env.DB_SSL === 'true',
+      //ssl: {
+      //  rejectUnauthorized: true,
+      //},
     }),
 
     MarcaModule,
     LineaModule,
+    SuperlineaModule,
     ProductoModule,
     CondicionIvaModule,
     LocalidadModule,

@@ -11,6 +11,8 @@ import {
 import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ReferenciaDto } from 'src/modules/common/dto/referencia.dto';
+import { Presentacion } from '../domain/entities/presentacion.entity';
+import { PresentacionDto } from './presentacion-producto.dto';
 /*
 Se Utiliza cuando se necesita la entidad producto
 */
@@ -54,7 +56,7 @@ export class ProductoDto {
 
   @ApiProperty()
   @IsNumber()
-  porcentaje: number;
+  margen: number;
 
   @ApiProperty()
   @IsBoolean()
@@ -133,15 +135,6 @@ export class ProductoDto {
   @IsInt()
   stockMinimo: number;
 
-  @ApiProperty()
-  @IsBoolean()
-  @IsNotEmpty()
-  utilizaPack: boolean;
-
-  @ApiPropertyOptional()
-  @IsInt()
-  cantidadPorPack: number;
-
   @ApiProperty({ example: 123 })
   @Type(() => Number)
   @IsInt()
@@ -149,5 +142,10 @@ export class ProductoDto {
 
   @IsString()
   codigoReferencia?: string;
+
+  @ApiPropertyOptional({ type: () => PresentacionDto })
+  @ValidateNested()
+  @Type(() => PresentacionDto)
+  presentacion?: PresentacionDto|null;
 
 }

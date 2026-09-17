@@ -27,6 +27,9 @@ import { ProductoRelatedEntitiesValidator } from '../../infraestructure/validato
 import { ProductoUniquenessValidator } from '../../infraestructure/validators/producto-uniqueness.validator.ts';
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
+import { PresentacionService } from './presentacion.service';
+import { GeneradorDenominacionService } from '../../domain/services/generador-denominacion.service';
+import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -34,6 +37,7 @@ export class ProductoService {
     @Inject('IProductoRepository')
     private readonly repository: IProductoRepository,
     private readonly lineaService: LineaService,
+    private readonly presentacionService: PresentacionService,
 
     @Inject(forwardRef(() => MarcaService))
     private readonly marcaService: MarcaService,
@@ -43,6 +47,7 @@ export class ProductoService {
     //  Domain Services
     private readonly intrinsicValidationService: ProductoIntrinsicValidationService,
     private readonly validationService: ProductoValidationService,
+    private readonly generadorDenominacionService: GeneradorDenominacionService,
 
     // Infrastructure Validators
     private readonly relatedEntitiesValidator: ProductoRelatedEntitiesValidator,
@@ -65,12 +70,13 @@ export class ProductoService {
       await this.validarYPrepararCreacion(dto);
 
 
+    const presentacion = await this.presentacionService.ejecutar(dto.presentacion);
 
     const entity = await this.repository.create(
       dto,
       linea,
       marca,
-
+      presentacion,
       usuario,
     );
 
@@ -84,15 +90,17 @@ export class ProductoService {
   async update(id: number, dto: UpdateProductoDto) {
     this.logger.log(`Actualizandox  ${this.ENTITY_NAME} con ID: ${id}`);
 
-    const { marca, linea, usuario } =
+    const { marca, linea,  usuario } =
       await this.validarYPrepararActualizacion(id, dto);
 
+    const presentacion = await this.presentacionService.ejecutar(dto.presentacion!);
+  
     const entity = await this.repository.update(
       id,
       dto,
       linea,
       marca,
-
+      presentacion,
       usuario,
     );
 
@@ -344,8 +352,7 @@ export class ProductoService {
     //  Validar reglas de negocio sobre entidades (Domain)
     this.validationService.validarEntidadesRelacionadas(
       marca,
-      linea,
-
+      linea
     );
 
 
@@ -407,7 +414,6 @@ export class ProductoService {
     this.validationService.validarEntidadesRelacionadas(
       marca,
       linea,
-
     );
 
     // 5 Validar usuario
@@ -418,5 +424,15 @@ export class ProductoService {
     return { marca, linea, usuario };
   }
 
+
+  async generarDenominacionAutomatica(dto: GenerarDenominacionDto){
+    const marca = await this.marcaService.findEntityById(dto.marcaId);
+    const linea = await this.lineaService.findEntityById(dto.lineaId);
+    //busca presentación, si no existe la crea
+    const presentacion = await this.presentacionService.ejecutar(dto.presentacion);
+
+    return this.generadorDenominacionService.generar(marca, linea, presentacion);
+
+  }
 
 }

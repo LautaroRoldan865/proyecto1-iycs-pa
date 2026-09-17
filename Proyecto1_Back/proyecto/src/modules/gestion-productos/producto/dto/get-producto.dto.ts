@@ -8,6 +8,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
+import { PresentacionDto } from './presentacion-producto.dto';
 /*
 Se Utiliza para la busqueda y llenado de la tabla
 */
@@ -85,7 +86,6 @@ export class GetProductoDto {
   precioConIva: number;
 
 
-
   @ApiProperty({ example: 1, description: 'es de sistema de la exportacion' })
   @Type(() => Number)
   @IsNumber()
@@ -113,20 +113,9 @@ export class GetProductoDto {
   @Min(0)
   stockMinimo: number;
 
-  @ApiProperty({
-    description: 'Indica si posee utiliza Stock minimo',
-    type: Boolean,
-    example: false,
-  })
-  @IsBoolean()
-  @IsNotEmpty()
-  utilizaPack: boolean;
-
-  @ApiProperty({ example: 50, description: 'Cantidad en stock minimo' })
-  @Type(() => Number)
-  @IsInt()
-  @Min(0)
-  cantidadPorPack: number;
+  @ApiProperty({ example: '500 MILILITROS', description: 'Presentación formateada para la tabla' })
+  @IsString()
+  presentacion: string;
 
   @IsString()
   codigoReferencia: string;
