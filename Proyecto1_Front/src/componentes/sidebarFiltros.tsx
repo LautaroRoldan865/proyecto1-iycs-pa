@@ -42,6 +42,8 @@ export interface FiltrosSideBar {
   codigoProveedor?: boolean;
   codigoReferencia?: boolean;
   linea?: boolean;
+  // CR-004 (CA-004.3): Filtro por SuperLínea
+  superlinea?: boolean;
   sublinea?: boolean;
   marca?: boolean;
   conStock?: boolean;
@@ -84,7 +86,7 @@ export function SidebarFiltros({ isOpen, onClose, onOpen }: Omit<SidebarProps, "
     setBuscarLineas,
   } = useFiltrosContext();
 
-  const { lineas, sublineas, marcas, clientes, proveedores, condicionesIva, provincias, familiasBanco } =
+  const { lineas, sublineas, marcas, clientes, proveedores, condicionesIva, provincias, familiasBanco, superlineas } =
     useCatalogosContext();
 
   const handleLimpiarFiltros = () => {
@@ -414,7 +416,85 @@ export function SidebarFiltros({ isOpen, onClose, onOpen }: Omit<SidebarProps, "
                       </AccordionItem>
                     )}
 
-                    {/* Filtro Subínea */}
+                    {/* Filtro SuperLínea — CR-004 (CA-004.3) */}
+                    {filtrosNecesarios.superlinea && (
+                      <AccordionItem value="superlinea" className="border border-gray-200 dark:border-slate-600 rounded-lg">
+                        <AccordionTrigger className="bg-gray-400 dark:bg-gray-700 px-4 py-3 hover:no-underline">
+                          <div className="flex items-center space-x-3">
+                            <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">SuperLínea</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <div className="border-t border-gray-100 dark:border-slate-700 pt-4">
+                            <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4 border border-gray-200 dark:border-slate-600">
+                              <div className="space-y-3">
+                                {/* Input de búsqueda por denominación */}
+                                <div className="relative">
+                                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                  <Input
+                                    type="text"
+                                    placeholder="Denominación..."
+                                    className="pl-10 bg-white dark:bg-slate-600 border-gray-300 dark:border-slate-500 focus:border-blue-500 focus:ring-blue-500"
+                                    value={valoresFiltros.denominacionSuperlinea ?? ""}
+                                    onChange={(e) =>
+                                      setValoresFiltros({
+                                        ...valoresFiltros,
+                                        denominacionSuperlinea: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </div>
+                                {/* Select de SuperLínea
+                                    TODO CR-003: Cuando CR-003 esté integrado, poblar 'superlineas'
+                                    desde el endpoint de SuperLíneas en consultar-producto.tsx */}
+                                <div>
+                                  <Select
+                                    value={
+                                      (superlineas ?? []).find((option) => option.id === valoresFiltros.superlineaId) || null
+                                    }
+                                    options={superlineas ?? []}
+                                    getOptionLabel={(option) => option.denominacion}
+                                    getOptionValue={(option) => String(option.id)}
+                                    onChange={(option) =>
+                                      setValoresFiltros({
+                                        ...valoresFiltros,
+                                        superlineaId: option ? option.id : undefined,
+                                      })
+                                    }
+                                    placeholder="Seleccione una SuperLínea"
+                                    className="text-black"
+                                    menuPortalTarget={document.body}
+                                    noOptionsMessage={() => "Sin opciones"}
+                                    styles={{
+                                      control: (base) => ({
+                                        ...base,
+                                        color: "black",
+                                      }),
+                                      singleValue: (base) => ({
+                                        ...base,
+                                        color: "black",
+                                      }),
+                                      option: (base, { isSelected, isFocused }) => ({
+                                        ...base,
+                                        color: isSelected ? "white" : "black",
+                                        backgroundColor: isSelected ? "#3b82f6" : isFocused ? "#93c5fd" : "white",
+                                      }),
+                                      menuPortal: (base) => ({
+                                        ...base,
+                                        zIndex: 9999,
+                                      }),
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )}
+
+                    {/* Filtro Sublínea */}
                     {filtrosNecesarios.sublinea && (
                       <AccordionItem
                         value="sublinea"

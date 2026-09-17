@@ -102,6 +102,7 @@ export default function ConsultarProductos() {
       denominacion: true,
       codigoProveedor: true,
       linea: true,
+      superlinea: true, // CR-004 (CA-004.3): Filtro por SuperLínea
       marca: true,
       proveedor: true,
       conStock: true,
@@ -356,11 +357,17 @@ export default function ConsultarProductos() {
 
     setLoading(true);
 
+    // CA-004.6: la denominación se envía solo si tiene mínimo 2 caracteres
+    const denominacionFiltro = (valoresFiltros.denominacion ?? "").length >= 2
+      ? valoresFiltros.denominacion
+      : undefined;
+
     const filtrosConPaginacion = {
-      denominacion: valoresFiltros.denominacion,
+      denominacion: denominacionFiltro,
       codigoProveedor: valoresFiltros.codigoProveedor,
       codigoReferencia: valoresFiltros.codigoReferencia,
       lineaId: valoresFiltros.lineaId,
+      superlineaId: valoresFiltros.superlineaId, // CR-004 (CA-004.3)
       marcaId: valoresFiltros.marcaId,
       proveedorId: valoresFiltros.proveedorId,
       conStock: valoresFiltros.conStock,
@@ -400,13 +407,19 @@ export default function ConsultarProductos() {
     }
     setLoading(true);
 
+    // CA-004.6: la denominación se envía solo si tiene mínimo 2 caracteres
+    const denominacionFiltro = (valoresFiltros.denominacion ?? "").length >= 2
+      ? valoresFiltros.denominacion
+      : undefined;
+
     const filtrosConPaginacion = {
-      denominacion: valoresFiltros.denominacion,
+      denominacion: denominacionFiltro,
       codigoProveedor: valoresFiltros.codigoProveedor,
       codigoReferencia: valoresFiltros.codigoReferencia,
       codProveedorExacto: valoresFiltros.codProveedorExacto,
       codReferenciaExacto: valoresFiltros.codReferenciaExacto,
       lineaId: valoresFiltros.lineaId,
+      superlineaId: valoresFiltros.superlineaId, // CR-004 (CA-004.3)
       marcaId: valoresFiltros.marcaId,
       proveedorId: valoresFiltros.proveedorId,
       conStock: valoresFiltros.conStock,
@@ -575,8 +588,20 @@ export default function ConsultarProductos() {
                     />
                   ))}
                 </div>
-                
 
+                {/* CA-004.7: Mensaje cuando no hay resultados */}
+                {!loading && filtrosInicializados && productos.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg p-8 max-w-md">
+                      <p className="text-gray-500 dark:text-gray-400 text-base font-medium">
+                        No se encontraron productos que coincidan con los criterios de búsqueda.
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+                        Intentá modificar los filtros o ingresá al menos 2 caracteres en la denominación.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
               </CardContent>
             </Card>

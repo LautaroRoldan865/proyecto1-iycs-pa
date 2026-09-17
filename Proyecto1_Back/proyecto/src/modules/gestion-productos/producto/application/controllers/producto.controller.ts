@@ -115,6 +115,7 @@ export class ProductoController {
       codigoReferencia,
       marcaId,
       lineaId,
+      superlineaId, // CR-004: filtro por SuperLínea (CA-004.3)
       proveedorId,
       conStock,
       skip,
@@ -127,6 +128,7 @@ export class ProductoController {
       codigoReferencia,
       marcaId,
       lineaId,
+      superlineaId, // CR-004
       proveedorId,
       conStock,
       skip,

@@ -216,6 +216,23 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     }
   }
 
+  /**
+   * CR-004: Busca productos aplicando filtros combinables (CA-004.8).
+   *
+   * @param denominacion - Texto parcial para buscar en el nombre (CA-004.1, CA-004.4)
+   * @param codigoProveedor - Código del proveedor (exacto o parcial)
+   * @param codProveedorExacto - Si true, busca código exacto
+   * @param codigoReferencia - Código de referencia parcial
+   * @param marca_id - ID de marca para filtrar
+   * @param linea_id - ID de línea para filtrar (CA-004.2)
+   * @param superlinea_id - ID de SuperLínea para filtrar (CA-004.3).
+   *   La query está preparada pero comentada hasta que CR-003 integre
+   *   la entidad Superlinea y la FK `superlinea_id` en la tabla `linea`.
+   * @param proveedor_id - ID de proveedor para filtrar
+   * @param conStock - Si true, solo productos con stock > 0
+   * @param skip - Offset para paginación
+   * @param take - Cantidad de resultados por página
+   */
   async findBy(
     denominacion: string,
     codigoProveedor: string,
@@ -223,6 +240,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     codigoReferencia: string,
     marca_id: number,
     linea_id: number,
+    superlinea_id: number | undefined, // CR-004 (CA-004.3)
     proveedor_id: number,
     conStock: boolean,
     skip: number,
@@ -233,6 +251,9 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       .createQueryBuilder('producto')
       .leftJoinAndSelect('producto.marca', 'marca')
       .leftJoinAndSelect('producto.linea', 'linea')
+      // TODO CR-003: Descomentar cuando CR-003 integre la entidad Superlinea
+      // y la FK superlinea_id en la tabla linea (relación ManyToOne Linea→Superlinea).
+      // .leftJoinAndSelect('linea.superlinea', 'superlinea')
 
     if (denominacion || codigoProveedor || codigoReferencia) {
       const condiciones: string[] = [];
@@ -275,6 +296,13 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     if (linea_id) {
       query.andWhere('linea.id = :linea_id', { linea_id });
     }
+
+    // CR-004 (CA-004.3): Filtro por SuperLínea.
+    // TODO CR-003: Descomentar cuando CR-003 integre la entidad Superlinea
+    // y el JOIN de arriba esté activo.
+    // if (superlinea_id) {
+    //   query.andWhere('superlinea.id = :superlinea_id', { superlinea_id });
+    // }
 
     this.logger.warn(`conStock llega como: ${conStock} (${typeof conStock})`);
 

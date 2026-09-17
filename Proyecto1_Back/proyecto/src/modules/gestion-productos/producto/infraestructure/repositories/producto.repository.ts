@@ -77,6 +77,7 @@ export class ProductoRepository implements IProductoRepository {
     codigoReferencia: string,
     marca_id: number,
     linea_id: number,
+    superlinea_id: number | undefined, // CR-004: filtro por SuperLínea (CA-004.3)
     proveedor_id: number,
     conStock: boolean,
     skip: number,
@@ -89,6 +90,7 @@ export class ProductoRepository implements IProductoRepository {
       codigoReferencia,
       marca_id,
       linea_id,
+      superlinea_id, // CR-004
       proveedor_id,
       conStock,
       skip,

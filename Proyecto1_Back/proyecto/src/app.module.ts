@@ -42,16 +42,14 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       database: process.env.DB_DATABASE,
       timezone: '-03:00',
 
-      //  Auto-carga de entidades desde los módulos
+      // Auto-carga de entidades desde los módulos
       // Las entidades se registran automáticamente cuando usás
       // TypeOrmModule.forFeature([Entidad]) en tus módulos
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
       synchronize: false,  
-      //ssl: process.env.DB_SSL === 'true',
-      ssl: {
-        rejectUnauthorized: true,
-      },
+      // Solo inyecta el objeto ssl si DB_SSL='true'
+      ...(process.env.DB_SSL === 'true' ? { ssl: { rejectUnauthorized: false } } : {})
     }),
 
     MarcaModule,
