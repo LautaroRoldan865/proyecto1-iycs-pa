@@ -1,7 +1,7 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import { ISuperLineaRepository } from "../domain/interfaces/superlinea.repository.interface";
 import { SuperLinea } from "../domain/entities/superlinea.entity";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, IsNull, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UpdateSuperLineaDto } from "../dto/update-superlinea.dto";
 import { CreateSuperLineaDto } from "../dto/create-superlinea.dto";
@@ -18,17 +18,18 @@ export class SuperLineaRepository implements ISuperLineaRepository{
         @InjectRepository(SuperLinea)
         private readonly superLineaRepository: Repository<SuperLinea>,
         private readonly dataSource: DataSource,
+        @Inject('UnitOfWork') private readonly uow: IUnitOfWork,
     ){}
 
     
     @Transactional()
     async create(data: CreateSuperLineaDto):Promise<SuperLinea> {
-        const repository = this.ouw.getRepository(SuperLinea);
-
+        const repository = this.uow.getRepository(SuperLinea);
         const newSuperlinea = repository.create({
             denominacion:data.denominacion,
             observacion:data.observacion,
             usuarioCreatedId: data.usuarioCreatedId,
+            createdAt: new Date(),
         });
         return await repository.save(newSuperlinea)
     };
@@ -37,7 +38,7 @@ export class SuperLineaRepository implements ISuperLineaRepository{
     @Transactional()
     async update(id:number, data: UpdateSuperLineaDto): Promise<SuperLinea>{
     
-        const repository = this.ouw.getRepository(SuperLinea);
+        const repository = this.uow.getRepository(SuperLinea);
         const entity = await repository.findOne({
             where: { id },
     
@@ -56,16 +57,25 @@ export class SuperLineaRepository implements ISuperLineaRepository{
         return await repository.save(entity);
     }
 
-    async findAllFor(denominacion: string,): Promise<SuperLinea[]> {
-        return await this.superLineaRepository.findBy({denominacion,});
+    async findAllFor(denominacion: string = ''): Promise<SuperLinea[]> {
+    return await this.superLineaRepository
+        .createQueryBuilder('superlinea')
+        .where('superlinea.deletedAt IS NULL')
+        .andWhere(
+            'UPPER(superlinea.denominacion) LIKE :denominacion',
+            {
+                denominacion: `%${denominacion.trim().toUpperCase()}%`,
+            },
+        )
+        .getMany();
     }
 
     async findOne(id:number): Promise<SuperLinea | null> {
        return await this.superLineaRepository
        .createQueryBuilder('superlinea')
        .leftJoinAndSelect(
-            'superlinea.linea',
-            'linea',
+            'superlinea.lineas',
+            'lineas',
         )
        .where('superlinea.id = :id', { id })
        .andWhere('superlinea.deletedAt IS NULL')
@@ -73,15 +83,38 @@ export class SuperLineaRepository implements ISuperLineaRepository{
     }
 
     @Transactional()
-    async remove(entity:SuperLinea, user:Usuario):Promise<SuperLinea>{
+    async remove(entity: SuperLinea, usuarioDeletedId: number): Promise<SuperLinea> {
         const repository = this.uow.getRepository(SuperLinea);
         entity.deletedAt = new Date();
-        entity.usuarioDeletedId = user.id;
+        entity.usuarioDeletedId = usuarioDeletedId;
         return await repository.save(entity);
     }
     
     async findAll(): Promise<SuperLinea[]> {
-        return await this.superLineaRepository.find();
+        return await this.superLineaRepository.find({
+            where: {
+                deletedAt: IsNull(),
+            },
+        });
+    }
+
+    async findByDenominationWith(denominacion: string): Promise<SuperLinea | null> {
+        return await this.superLineaRepository
+            .createQueryBuilder('superlinea')
+            .withDeleted()
+            .where('UPPER(superlinea.denominacion) = :denominacion', {
+                denominacion: denominacion.trim().toUpperCase(),
+            })
+            .getOne();
+    }
+
+    async hasLines(id: number): Promise<boolean> {
+        const count =  await this.superLineaRepository
+            .createQueryBuilder('superlinea')
+            .innerJoin('superlinea.lineas', 'linea', 'linea.deletedAt IS NULL')
+            .where('superlinea.id = :id', { id })
+            .getCount();
+        return count > 0;
     }
 
 }
