@@ -22,11 +22,12 @@ import { ProductoDeletePolicy } from './application/policies/producto-delete.pol
 import { PresentacionService } from './application/services/presentacion.service';
 import { PresentacionRepository } from './infraestructure/repositories/presentacion.repository';
 import { Presentacion } from './domain/entities/presentacion.entity';
+import { HistorialPrecio } from './domain/entities/historial-precio.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Producto, Presentacion]),
+    TypeOrmModule.forFeature([Producto, Presentacion, HistorialPrecio]),
     CommonModule,
     forwardRef(() => LineaModule),
     forwardRef(() => MarcaModule),

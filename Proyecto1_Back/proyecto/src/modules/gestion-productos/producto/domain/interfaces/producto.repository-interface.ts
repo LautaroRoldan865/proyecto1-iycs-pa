@@ -7,6 +7,7 @@ import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { UpdatePrecioDto } from '../../dto/update-precio.dto';
 import { Presentacion } from '../entities/presentacion.entity';
+import { HistorialPrecio } from '../entities/historial-precio.entity';
 
 export interface IProductoRepository {
 
@@ -83,4 +84,8 @@ export interface IProductoRepository {
   existsProductosActivosByLinea(lineaId: number): Promise<boolean>;
 
   findByIds(ids: number[]): Promise<Producto[]>;
+
+  findParaActualizacionPrecios(lineaId?:number): Promise<Producto[]>
+  guardarLoteConHistorial(producto:Producto[], historiales: HistorialPrecio[], uow?: IUnitOfWork):Promise<void>
+  findHistorialPreciobyProdcutoId(productoId:number):Promise<HistorialPrecio[]>
 }

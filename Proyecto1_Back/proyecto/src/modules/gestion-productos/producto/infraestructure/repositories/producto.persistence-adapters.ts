@@ -15,6 +15,7 @@ import { UpdatePrecioDto } from '../../dto/update-precio.dto';
 import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
 import { Presentacion } from '../../domain/entities/presentacion.entity';
+import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
 
 
 @Injectable()
@@ -516,5 +517,34 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     }
   }
 
+  async findParaActualizacionPrecios(lineaId?: number): Promise<Producto[]> {
+      const qb = this.repository.createQueryBuilder('producto')
+      .where('producto.deletedAt  IS NULL')
+
+      if(lineaId){
+        qb.andWhere('producto.lineaId = :lineaId', { lineaId})
+      }
+
+      //analizar que considera global el profe
+      
+      return await qb.getMany()
+  }
+
+  async guardarLoteConHistorial(producto: Producto[], historiales: HistorialPrecio[], uow?: IUnitOfWork): Promise<void> {
+      const repoProducto = uow ? uow.getRepository(Producto) : this.repository
+      const repoHistorial = uow ? uow.getRepository(HistorialPrecio) : this.dataSource.getRepository(HistorialPrecio)
+
+      await repoProducto.save(producto)
+      await repoHistorial.save(historiales)
+  }
+
+  async findHistorialPreciobyProdcutoId(productoId: number): Promise<HistorialPrecio[]> {
+      const repoHistorial = this.dataSource.getRepository(HistorialPrecio)
+
+      return await repoHistorial.find({
+        where: {producto: {id: productoId}},
+        order: {fecha: 'DESC'}
+      })
+  }
 }
 
