@@ -29,6 +29,7 @@ import MarcasSelector from "../componentes/configuracion/marcas-selector";
 import { getUsuarioId } from "../../../../utils/auth";
 import RegistrarActualizarLineaForm from "../../linea/utils/registrar-actualizar-linea";
 import PorcentajeInput from "../../../herramientas/formateo-de-campos/porcentaje-input";
+import PresentacionesSelector from "../componentes/configuracion/presentacion-selector";
 
 
 export default function RegistrarActualizarProductoForm({
@@ -76,6 +77,14 @@ export default function RegistrarActualizarProductoForm({
 
   const [marcas, setMarcas] = React.useState<SelectMarca[]>([]);
   const [lineas, setLineas] = React.useState<SelectLinea[]>([]);
+  const [presentaciones, setPresentaciones] = React.useState<SelectPresentacion[]>([]);
+
+  //pone a la denominación como vacia
+  const [denominacionPresentacion, setDenominacionPresentacion] = useState("");
+
+  //cambia el estado
+  const [selectedPresentacion, setSelectedPresentacion] =
+    React.useState<SelectPresentacion | null>(null);
   
   const [denominacionMarca, setDenominacionMarca] = useState(" ");
   const [denominacionLinea, setDenominacionLinea] = useState(" ");
@@ -105,6 +114,9 @@ export default function RegistrarActualizarProductoForm({
   const selectLineaRef = useRef<HTMLDivElement>(null);
   const denominacionMarcaRef = useRef<HTMLInputElement>(null);
   const selectMarcaRef = useRef<HTMLDivElement>(null);
+
+  const denominacionPresentacionRef = useRef<HTMLInputElement>(null);
+  const selectPresentacionRef = useRef<HTMLDivElement>(null);
 
   const enterToObservacion = useEnterFocus(observacionRef);
   const enterToPrecioOferta = useEnterFocus(precioOfertaRef);
@@ -237,6 +249,18 @@ export default function RegistrarActualizarProductoForm({
           console.log("No se encontró una marca con la denominación ingresada.");
         }
       }
+      if (select === "PRESENTACION") {
+        const presentaciones = await ProductoService.obtenerTotales(
+          { denominacion: denominacionPresentacion }, "presentaciones"
+        );
+
+        if(presentaciones){
+          console.log("Presentaciones encontradas: ", presentaciones);
+          setPresentaciones(presentaciones.data);
+        }else{
+          console.log("No se encontraron presentaciones.")
+        }
+      }
       
     } catch (error) {
       console.error("Error al buscar por código:", error);
@@ -255,6 +279,10 @@ export default function RegistrarActualizarProductoForm({
         handleBuscarPorDenominacion("MARCA");
       }
 
+      if(select === "PRESENTACION"){
+        handleBuscarPorDenominacion("PRESENTACION");
+      }
+
       // Esperar un poco (opcional, si el botón hace una búsqueda antes)
       setTimeout(() => {
         let selectDiv: HTMLDivElement | null = null;
@@ -265,6 +293,10 @@ export default function RegistrarActualizarProductoForm({
 
         if (select === "LINEA") {
           selectDiv = selectLineaRef.current;
+        }
+
+        if(select==="PRESENTACION"){
+          selectDiv = selectPresentacionRef.current;
         }
 
         if (select === "TIPO-PRODUCTO") {
@@ -542,6 +574,31 @@ export default function RegistrarActualizarProductoForm({
                   methods.setValue("marcaId", marca?.id || 0);
                 }}
                 onAgregarMarca={() => setMostrarFormularioMarca(true)}
+              />
+
+              <PresentacionesSelector
+                denominacionPresentacion={denominacionPresentacion}
+                setDenominacionPresentacion={setDenominacionPresentacion}
+                denominacionPresentacionRef={denominacionPresentacionRef}
+                selectPresentacionRef={selectPresentacionRef}
+                presentaciones={presentaciones}
+                selectedPresentacion={selectedPresentacion}
+                presentacionId={watch("presentacionId")}
+                disabled={producto && producto.sistema > 0}
+                error={errors.presentacionId?.message}
+                onEnterPresentacion={(e) =>
+                  handleEnterEnSelect(e, "PRESENTACION")
+                }
+                onChangePresentacion={(presentacion) => {
+                  setSelectedPresentacion(presentacion);
+                  methods.setValue(
+                    "presentacionId",
+                    presentacion?.id || 0
+                  );
+                }}
+                onAgregarPresentacion={() => {
+                  // acá después abrimos el formulario de registrar presentación
+                }}
               />
 
               </div>

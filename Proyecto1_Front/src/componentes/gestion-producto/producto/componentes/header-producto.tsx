@@ -35,6 +35,7 @@ export function ProductosHeader({
   onImprimirTodo,
   onImprimirPagina,
 }: Props) {
+  console.log("¿PUEDE AGREGAR?:", puedeAgregarProducto(roles));
   return (
     <CardHeader className="flex flex-col md:flex-row gap-4 p-4">
       <div className="flex flex-col md:flex-row flex-wrap gap-4 w-full">

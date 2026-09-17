@@ -47,9 +47,10 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       // TypeOrmModule.forFeature([Entidad]) en tus módulos
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
-      synchronize: true,  
+      //poner en false 
+      synchronize: false,  
       //descomentar ssl: process.env.DB_SSL === 'true' | comentar para probarlo en local -mili
-      ssl: process.env.DB_SSL === 'true',
+      //ssl: process.env.DB_SSL === 'true',
       //ssl: {
       //  rejectUnauthorized: true,
       //},
