@@ -8,6 +8,8 @@ import { SuperLineaRepository } from './infraestructura/superlinea.repository';
 import { DataSource } from 'typeorm';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
+import { PoliticaEliminacionSuperLinea } from './domain/services/politica-eliminacion-superlinea';
+import { PoliticaSuperLineaService } from './domain/services/politica-denominacion';
 
 @Module({
   imports:[
@@ -17,6 +19,9 @@ import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit
   controllers: [SuperlineaController],
   providers: [
     SuperlineaService,
+    PoliticaEliminacionSuperLinea,
+    PoliticaSuperLineaService,
+    SuperLineaRepository,
     {
       provide: 'ISuperLineaRepository',
       useClass: SuperLineaRepository,
