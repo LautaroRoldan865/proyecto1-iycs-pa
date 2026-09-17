@@ -31,6 +31,7 @@ import { NormalizeDenominacionSearchPipe } from 'src/modules/common/pipes/normal
 import { DenominacionBusquedaDto } from 'src/modules/common/dto/denominacion-busqueda.dto';
 import { SearchProductoRapidoDto } from '../../dto/search-producto-rapido.dto';
 import { ProductoService } from '../services/producto.service';
+import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 
 
 @ApiTags('Gestion Productos')
@@ -51,6 +52,11 @@ export class ProductoController {
     return this.service.create(createDto);
   }
   
+  @Post('denominacion-automatica')
+  async generarDenominacionAutomatica(@Body() dto: GenerarDenominacionDto){
+    return this.service.generarDenominacionAutomatica(dto);
+  }
+
   @Get('find-all-for-marcas/select')
   @Roles(
     'Root',
@@ -192,4 +198,6 @@ export class ProductoController {
     const data = await this.service.findByIdConAuditoria(id);
     return data;
   }
+
+
 }

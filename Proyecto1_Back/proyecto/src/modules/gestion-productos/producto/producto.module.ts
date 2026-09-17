@@ -22,6 +22,7 @@ import { ProductoDeletePolicy } from './application/policies/producto-delete.pol
 import { PresentacionService } from './application/services/presentacion.service';
 import { PresentacionRepository } from './infraestructure/repositories/presentacion.repository';
 import { Presentacion } from './domain/entities/presentacion.entity';
+import { GeneradorDenominacionService } from './domain/services/generador-denominacion.service';
 
 
 @Module({
@@ -43,6 +44,7 @@ import { Presentacion } from './domain/entities/presentacion.entity';
     ProductoRelatedEntitiesValidator,
     ProductoUniquenessValidator,
     ProductoDeletePolicy,
+    GeneradorDenominacionService,
     PresentacionService,
       {
       provide: 'IPresentacionRepository',

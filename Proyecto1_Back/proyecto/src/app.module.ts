@@ -49,6 +49,7 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
       synchronize: true,  
+      //descomentar ssl: process.env.DB_SSL === 'true' | comentar para probarlo en local -mili
       ssl: process.env.DB_SSL === 'true',
       //ssl: {
       //  rejectUnauthorized: true,
