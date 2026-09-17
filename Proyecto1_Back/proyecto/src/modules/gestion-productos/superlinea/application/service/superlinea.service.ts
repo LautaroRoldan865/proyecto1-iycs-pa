@@ -1,35 +1,110 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { ISuperLineaRepository } from '../../domain/interfaces/superlinea.repository.interface';
 import { CreateSuperLineaDto } from '../../dto/create-superlinea.dto';
+import { UpdateSuperLineaDto } from '../../dto/update-superlinea.dto';
+import { MessageFrontUtils } from 'src/modules/common/utils/message/message-front.util';
+import { SuperLinea } from '../../domain/entities/superlinea.entity';
+import { PoliticaSuperLineaService } from '../../domain/services/politica-denominacion';
+import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
+import { SuperLineaDto } from '../../dto/superlinea.dto';
+import { PoliticaEliminacionSuperLinea } from '../../domain/services/politica-eliminacion-superlinea';
 
 @Injectable()
 export class SuperlineaService {
     private readonly logger = new Logger(SuperlineaService.name)
+    private readonly ENTITY_NAME = 'SuperLinea';
 
     constructor(
         @Inject('ISuperLineaRepository')
         private readonly repository: ISuperLineaRepository,
-        @Inject('UnitOfWork')
-        private readonly uow: IUnitOfWork
+        private readonly politicaSuperLinea: PoliticaSuperLineaService,
+        private readonly politicaEliminacion: PoliticaEliminacionSuperLinea,
     ){}
 
-    async create(dto: CreateSuperLineaDto){
-        await this.uow.start()
 
-        try{
-            //1. Persistir Superlinea bajo la transaccion del UoW
-            const superlinea = await this.repository.create(dto,this.uow)
+    async create(dto: CreateSuperLineaDto) {
+        this.logger.log(`Creando ${this.ENTITY_NAME}: ${dto.denominacion}`,);
 
-            //2. Si hay operaciones asociadas (ej. asignar lineas hijas), se ejecutan  aca con this.uow
-            await this.uow.commit()
-            return superlinea
-        }catch(error){
-            await this.uow.commit()
-            this.logger.error(`Error en creación de SuperLinea: ${error}`)
-            throw error
-        } finally {
-            await this.uow.release()
+        await this.politicaSuperLinea.validarDenominacion(dto.denominacion);
+
+        const entity = await this.repository.create(dto);
+
+
+        return MessageFrontUtils.createSimple(
+        this.ENTITY_NAME,
+        entity.denominacion,
+        'creada',
+        );
+    }
+
+    async update(id:number, dto:UpdateSuperLineaDto){
+        this.logger.log(`Editando ${this.ENTITY_NAME}: ${dto.denominacion}`);
+
+        const entity = await this.findEntityById(id);
+        
+        if (dto.denominacion) {
+            await this.politicaSuperLinea.validarDenominacion(dto.denominacion,id);
         }
+
+        const updated = await this.repository.update(id,dto);
+
+        return MessageFrontUtils.createSimple(
+        this.ENTITY_NAME,
+        updated.denominacion,
+        'editada',
+        );
+
+    }
+
+    async findEntityById(id: number): Promise<SuperLinea> {
+
+        const entity = await this.repository.findOne(id);
+
+        if (!entity) {
+        throw new NotFoundException(
+            `${this.ENTITY_NAME} con ID ${id} no encontrada.`,
+        );
+        }
+
+        return entity;
+    }
+
+    async findAllForSelect(denominacion: string = ''): Promise<SuperLineaDto[]> {
+        const items = await this.repository.findAllFor(denominacion);
+        return items.map(item => ({
+            id: item.id,
+            denominacion: item.denominacion,
+            observacion: item.observacion ?? '',
+        }));
+    }
+  
+
+    async findDtoById(id: number): Promise<SuperLineaDto> {
+        const entity = await this.findEntityById(id);
+        return {
+            id: entity.id,
+            denominacion: entity.denominacion,
+            observacion: entity.observacion ?? '',
+        };
+    }
+
+
+    async remove(id: number, usuarioDeletedId: number) {
+
+        const entity = await this.findEntityById(id);
+
+        await this.politicaEliminacion.validar(id);
+
+        await this.repository.remove(
+            entity,
+            usuarioDeletedId,
+        );
+
+        return MessageFrontUtils.createSimple(
+            this.ENTITY_NAME,
+            entity.denominacion,
+            'eliminada',
+        );
     }
 }
