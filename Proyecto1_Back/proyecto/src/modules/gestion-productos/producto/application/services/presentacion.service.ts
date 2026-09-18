@@ -15,7 +15,7 @@ export class PresentacionService{
 
     const presentacion = await this.presentacionRepository.buscarPorCantidadYUnidad(data);
 
-    if (presentacion) {
+    if (presentacion !== null) {
       return presentacion;
     }
 

@@ -17,9 +17,6 @@ export class PresentacionRepository implements IPresentacionRepository{
     async buscarPorCantidadYUnidad(data:CreatePresentacionDto): Promise<Presentacion | null>{
         const presentacionBuscada= await this.presentacionRepository.findOneBy({
             cantidad: data.cantidad, unidad:data.unidad})
-        if(!presentacionBuscada){
-            this.guardar(data);
-        }
         return presentacionBuscada;
     }
     

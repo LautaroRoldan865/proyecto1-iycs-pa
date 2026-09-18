@@ -149,12 +149,24 @@ export class ProductoController {
     return this.service.buscarLineaDesdeProducto(id);
   }
 
+  @Get(':id/historial-precios')
+  @Roles('Root', 'Administrador', 'Empleado')
+  obtenerHistorialPrecios(@Param('id', ParseIntPipe) id: number) {
+    return this.service.obtenerHistorialPrecios(id);
+  }
+
   @Get(':id')
   @Roles('Root', 'Administrador', 'Empleado')
   @ApiOkResponse({ type: ProductoDto })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ProductoDto> {
     this.logger.log(`Buscando  ${this.ENTITY_NAME} con ID: ${id}`);
     return this.service.findDtoById(+id);
+  }
+
+  @Patch('precios/actualizacion-masiva')
+  @Roles('Root','Administrador')
+  actualizarPreciosMasivo(@Body() dto:ActualizarPreciosMasivosDto, @Query('usuarioId', ParseIntPipe) usuarioId:number,){
+    return this.service.actualizarPreciosMasivos(dto,usuarioId)
   }
 
   @Put(':id')
@@ -195,17 +207,7 @@ export class ProductoController {
     return data;
   }
 
-  @Get(':id/historial-precios')
-  @Roles('Root', 'Administrador', 'Empleado')
-  obtenerHistorialPrecios(@Param('id', ParseIntPipe) id: number) {
-    return this.service.obtenerHistorialPrecios(id);
-  }
-
-  @Patch('precios/actualizacion-masiva')
-  @Roles('Root','Administrador')
-  actualizarPreciosMasivo(@Body() dto:ActualizarPreciosMasivosDto, @Query('usuarioId', ParseIntPipe) usuarioId:number,){
-    return this.service.actualizarPreciosMasivos(dto,usuarioId)
-  }
+  
 
 
 }

@@ -49,10 +49,10 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
       synchronize: true,  
-      ssl: process.env.DB_SSL === 'true',
-      //ssl: {
-      //  rejectUnauthorized: true,
-      //},
+      //ssl: process.env.DB_SSL === 'true',
+      ssl: {
+        rejectUnauthorized: true,
+      },
     }),
 
     MarcaModule,
