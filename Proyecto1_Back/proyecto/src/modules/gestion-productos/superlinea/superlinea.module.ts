@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { LineaModule } from '../linea/linea.module';
 import { SuperLinea } from './domain/entities/superlinea.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,9 +11,10 @@ import { PoliticaSuperLineaService } from './domain/services/politica-denominaci
 import { SuperlineaController } from './application/controller/superlinea.controller';
 import { SuperlineaService } from './application/service/superlinea.service';
 
+
 @Module({
   imports:[
-    LineaModule,
+    forwardRef(() => LineaModule),
     TypeOrmModule.forFeature([SuperLinea])
   ],
   controllers: [SuperlineaController],

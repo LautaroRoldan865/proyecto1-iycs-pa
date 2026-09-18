@@ -17,6 +17,7 @@ import { LineaDto } from '../../dto/linea.dto';
 import { LineaMapper } from '../../mappers/linea.mapper';
 import { PoliticaEliminacionLinea } from '../../domain/services/politica-eliminacion-linea.service';
 import { Linea } from '../../domain/entities/linea.entity';
+import { LineaCreateValidator } from '../validators/linea.validator';
 
 @Injectable()
 export class LineaService {
@@ -26,8 +27,9 @@ export class LineaService {
     private readonly repository: ILineaRepository,
 
     @Inject(forwardRef(() => PoliticaEliminacionLinea))
-    private readonly validacionesService: PoliticaEliminacionLinea,
+    private readonly validacionService: PoliticaEliminacionLinea,
     private readonly usuarioService: UsuarioService,
+    private lineaValidator: LineaCreateValidator
 
   ) { }
 
@@ -37,10 +39,14 @@ export class LineaService {
     this.logger.log(
       `Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,
     );
+
+    const {superlinea} = await this.lineaValidator.validarYPrepararCreacion(dto);
+
+    this.logger.debug(`SuperLinea obtenida: ${JSON.stringify(superlinea)}`);
     await this.checkDenominacionExists(dto.denominacion, 0);
 
 
-    const entity = await this.repository.create(dto);
+    const entity = await this.repository.create(dto, superlinea);
 
 
     return MessageFrontUtils.createSimple(
@@ -155,7 +161,7 @@ export class LineaService {
     }
 
     const tieneProductosActivos =
-      await this.validacionesService.tieneProductosActivosParaLinea(id);
+      await this.validacionService.tieneProductosActivosParaLinea(id);
 
     if (tieneProductosActivos) {
       throw new ConflictException(
