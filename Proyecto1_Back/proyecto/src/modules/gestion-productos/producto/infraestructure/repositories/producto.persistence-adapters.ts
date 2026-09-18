@@ -258,9 +258,10 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       .leftJoinAndSelect('producto.marca', 'marca')
       .leftJoinAndSelect('producto.linea', 'linea')
       .leftJoinAndSelect('producto.presentacion', 'presentacion')
-      // TODO CR-003: Descomentar cuando CR-003 integre la entidad Superlinea
-      // y la FK superlinea_id en la tabla linea (relación ManyToOne Linea→Superlinea).
-      // .leftJoinAndSelect('linea.superlinea', 'superlinea')
+      // CR-004 (CA-004.3): JOIN de SuperLínea activado.
+      // Permite navegar desde producto → linea → superlinea para filtrar y mostrar la jerarquía.
+      // Requería que CR-003 (Vicky) implementara la entidad SuperLinea y la FK superlinea_id en linea.
+      .leftJoinAndSelect('linea.superlinea', 'superlinea')
 
     if (denominacion || codigoProveedor || codigoReferencia) {
       const condiciones: string[] = [];
@@ -305,11 +306,11 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     }
 
     // CR-004 (CA-004.3): Filtro por SuperLínea.
-    // TODO CR-003: Descomentar cuando CR-003 integre la entidad Superlinea
-    // y el JOIN de arriba esté activo.
-    // if (superlinea_id) {
-    //   query.andWhere('superlinea.id = :superlinea_id', { superlinea_id });
-    // }
+    // Filtra todos los productos cuya línea pertenezca a la SuperLínea seleccionada.
+    // Usa el alias 'superlinea' del JOIN de arriba para hacer el WHERE.
+    if (superlinea_id) {
+      query.andWhere('superlinea.id = :superlinea_id', { superlinea_id });
+    }
 
     this.logger.warn(`conStock llega como: ${conStock} (${typeof conStock})`);
 

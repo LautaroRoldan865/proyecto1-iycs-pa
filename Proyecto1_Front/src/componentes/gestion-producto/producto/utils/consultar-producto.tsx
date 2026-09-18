@@ -32,6 +32,9 @@ import { NotificacionModal } from "../../../NotificacionModal/modales/Notificaci
 import { ProductoNotificacion, EntidadTipo } from "../../../NotificacionModal/interfaces/notificacion.types";
 import { getRoles, getUsuarioId } from "../../../../utils/auth";
 import { puedeHacerAcciones } from "../domain/permisos-producto";
+// CR-004 (CA-004.3): Servicio de SuperLínea para poblar el selector del filtro.
+// Consume el endpoint GET /superlinea/for-select implementado en CR-003 (Vicky).
+import SuperlineaService from "../../superlinea/services/superlinea-service";
 
 
 export default function ConsultarProductos() {
@@ -87,12 +90,14 @@ export default function ConsultarProductos() {
 
   const filtrosInicialesConsultarProducto = useFiltrosIniciales("consultar-producto");
 
-    // Contexto de catálogos
+  // Contexto de catálogos — se agregan/actualizan las listas para los selects de la sidebar
   const {
     setLineas,
     setMarcas,
     setProveedores,
+    setSuperlineas, // CR-004 (CA-004.3): lista de SuperLíneas para el selector del filtro
   } = useCatalogosContext();
+
   
   // Setear qué filtros mostrar en la sidebar
   useEffect(() => {
@@ -213,6 +218,39 @@ export default function ConsultarProductos() {
   useEffect(() => {
     fetchProveedores();
   }, [valoresFiltros.denominacionProveedor]);
+
+  /**
+   * CR-004 (CA-004.3): Fetch de SuperLíneas para el selector del filtro de búsqueda.
+   *
+   * Llama al endpoint GET /superlinea/for-select?denominacion=<texto> (creado en CR-003 por Vicky).
+   * Se dispara cada vez que el usuario escribe en el input de denominación del acordeón "SuperLínea"
+   * del sidebar. Los resultados se guardan en el contexto de catálogos (setSuperlineas) para que
+   * el select de react-select los muestre como opciones.
+   *
+   * El mínimo de caracteres requerido se obtiene de la configuración del sistema
+   * (configuracion.caracteresParaBusqueda), igual que el resto de los fetch del componente.
+   */
+  const fetchSuperlineas = async () => {
+    setError(null);
+    try {
+      const caracteresParaBusqueda = configuracion?.caracteresParaBusqueda ?? 4;
+      if (
+        valoresFiltros.denominacionSuperlinea &&
+        valoresFiltros.denominacionSuperlinea.length >= caracteresParaBusqueda
+      ) {
+        const superlineas = await SuperlineaService.obtenerParaSelect(
+          valoresFiltros.denominacionSuperlinea
+        );
+        setSuperlineas(superlineas);
+      }
+    } catch (err: any) {
+      console.error("Error al obtener superlineas:", err);
+      setError("No se pudieron cargar las superlineas.");
+    }
+  };
+  useEffect(() => {
+    fetchSuperlineas();
+  }, [valoresFiltros.denominacionSuperlinea]);
 
   const handleAbrirActualizarProducto = async (id: number) => {
     if (id) {
