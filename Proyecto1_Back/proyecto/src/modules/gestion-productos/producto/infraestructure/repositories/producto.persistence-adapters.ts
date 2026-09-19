@@ -533,12 +533,13 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       return await qb.getMany()
   }
 
+  @Transactional()
   async guardarLoteConHistorial(producto: Producto[], historiales: HistorialPrecio[], uow?: IUnitOfWork): Promise<void> {
-      const repoProducto = uow ? uow.getRepository(Producto) : this.repository
-      const repoHistorial = uow ? uow.getRepository(HistorialPrecio) : this.dataSource.getRepository(HistorialPrecio)
+      const repoProducto = this.uow.getRepository(Producto)
+      const repoHistorial = this.uow.getRepository(HistorialPrecio)
 
       await repoProducto.save(producto)
-      await repoHistorial.save(historiales)
+      await repoHistorial.save(historiales) 
   }
 
   async findHistorialPreciobyProdcutoId(productoId: number): Promise<HistorialPrecio[]> {

@@ -33,6 +33,7 @@ import { ActualizarPreciosMasivosDto, TipoAjustePrecio } from '../../dto/actuali
 import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
 import { DataSource } from 'typeorm';
 import { PrecioInvalidoException } from '../../domain/exceptions/precio-invalido.exception';
+import { ActualizarPreciosMasivosUseCase } from '../use-cases/actualizar-precios-masivos.use-case';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -58,8 +59,9 @@ export class ProductoService {
 
     private readonly productoDeletePolicy: ProductoDeletePolicy,
 
-    @Inject('UnitOfWork') private readonly uow: IUnitOfWork
+    @Inject('UnitOfWork') private readonly uow: IUnitOfWork,
 
+    private readonly actualizarPreciosMasivosUseCase: ActualizarPreciosMasivosUseCase,
   ) { }
 
   private readonly ENTITY_NAME = 'Producto';
@@ -427,62 +429,7 @@ export class ProductoService {
   }
 
   async actualizarPreciosMasivos( dto:ActualizarPreciosMasivosDto, usuarioId?:number){
-    const productos = await this.repository.findParaActualizacionPrecios(dto.lineaId)
-
-    if(!productos || productos.length === 0){
-      throw new BadRequestException('No se encontraron productos activos apra actualizar')
-    }
-
-    const errores: string[] = []
-    const historiales: HistorialPrecio[] = []
-
-    for( const producto of productos){
-      const precioActual = producto.precio
-      let nuevoPrecio = 0
-
-      if(dto.tipoAjuste === TipoAjustePrecio.PORCENTAJE){
-        nuevoPrecio = Math.round((precioActual*(1+ dto.valor/100)+Number.EPSILON)*100)/100
-      }else{
-        nuevoPrecio = Math.round((precioActual + dto.valor+ Number.EPSILON)*100)/100
-      }
-
-      try{
-        const hist = producto.actualizarPrecioconHistorial(nuevoPrecio,dto.motivo,usuarioId)
-        historiales.push(hist)
-      }catch (error){
-        if(error instanceof PrecioInvalidoException){
-          errores.push(error.message)
-        }else{
-          throw error
-        }
-      }
-    }
-
-    if(errores.length > 0){
-      throw new BadRequestException({
-        statusCode: 400,
-        error: 'Validacion de precios fallida',
-        message: 'No es posible realizar la actualizacion masiva: uni o mas productos quedarian con precio meno o igual a cero',
-        detalles: errores
-      })
-    }
-
-    await this.uow.start()
-    try{
-      await this.repository.guardarLoteConHistorial(productos,historiales,this.uow)
-      await this.uow.commit()
-
-      return {
-        message: 'Actualización masiva de precios realizada con éxito.',
-        productosAfectados: productos.length,
-      };
-    } catch(error) {
-      await this.uow.rollback()
-      this.logger.error('Error al guardar la actualizacion masiva de precios')
-    }finally{
-      await this.uow.release()
-    }
-    
+    return this.actualizarPreciosMasivosUseCase.ejecutar(dto,usuarioId); 
   }
 
   async obtenerHistorialPrecios(productoId:number):Promise<HistorialPrecio[]>{

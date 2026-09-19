@@ -29,4 +29,14 @@ export class HistorialPrecio {
 
     @Column({ type: 'int', nullable: true})
     usuarioId?: number
+
+
+    constructor( precioAnterior: number, precioNuevo: number, motivo: string, producto: Producto, usuarioId?: number){
+        this.precioAnterior = precioAnterior;
+        this.precioNuevo = precioNuevo;
+        this.fecha = new Date();
+        this.motivo = motivo;
+        this.producto = producto;
+        this.usuarioId = usuarioId;
+    }
 }

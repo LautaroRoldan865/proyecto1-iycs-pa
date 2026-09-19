@@ -23,6 +23,7 @@ import { PresentacionService } from './application/services/presentacion.service
 import { PresentacionRepository } from './infraestructure/repositories/presentacion.repository';
 import { Presentacion } from './domain/entities/presentacion.entity';
 import { HistorialPrecio } from './domain/entities/historial-precio.entity';
+import { ActualizarPreciosMasivosUseCase } from './application/use-cases/actualizar-precios-masivos.use-case';
 
 
 @Module({
@@ -62,6 +63,7 @@ import { HistorialPrecio } from './domain/entities/historial-precio.entity';
     },
     NormalizeDenominacionPipe,
     ProductoPersistenceAdapter,
+    ActualizarPreciosMasivosUseCase
   ],
   
   exports: [

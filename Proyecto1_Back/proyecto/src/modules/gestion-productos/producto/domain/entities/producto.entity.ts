@@ -22,6 +22,8 @@ import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/pr
 import { Presentacion } from './presentacion.entity';
 import { HistorialPrecio } from './historial-precio.entity';
 import { PrecioInvalidoException } from '../exceptions/precio-invalido.exception';
+import { ProductoCalculoHelper } from '../helpers/producto-calculos.helper';
+import { redondearProducto } from 'src/modules/common/utils/number/redondeo';
 
 @Entity('producto')
 export class Producto {
@@ -180,10 +182,7 @@ export class Producto {
   historialPrecios: HistorialPrecio[]
 
   get precio(){
-    const costo = this.costo ?? 0
-    const margen = this.margen ?? 0
-    const calculado = costo + (costo*(margen/100))
-    return Math.round((calculado + Number.EPSILON)*100)/100
+    return ProductoCalculoHelper.calcularPrecio(this.costo,this.margen)
   }
 
   actualizarPrecioconHistorial(nuevoPrecio:number, motivo: string, usuarioId?: number){
@@ -192,18 +191,10 @@ export class Producto {
     }
 
     const precioAnterior = this.precio
-
-    const factorMargen = 1 + ((this.margen ?? 0)/100)
-    this.costo = Math.round(((nuevoPrecio/factorMargen)+ Number.EPSILON)*100)/100
+    this.costo = ProductoCalculoHelper.calcularNuevoCosto(nuevoPrecio,this.margen)
     this.fechaCosto = new Date()
 
-    const historial = new HistorialPrecio()
-    historial.precioAnterior = precioAnterior
-    historial.precioNuevo = nuevoPrecio
-    historial.fecha = new Date()
-    historial.motivo = motivo
-    historial.producto = this
-    historial.usuarioId = usuarioId
+    const historial = new HistorialPrecio(precioAnterior,nuevoPrecio,motivo,this,usuarioId)
 
     this.usuarioUpdated = {id: usuarioId} as Usuario
     this.updatedAt = new Date()
