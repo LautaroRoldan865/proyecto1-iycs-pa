@@ -18,6 +18,7 @@ import { Rol } from "./interfaces/generales/interfaces-generales";
 import CambioPreciosMasivo from "./componentes/gestion-producto/precios/cambio-precios-masivo/util/cambio-precios-masivo";
 import DashboardHome from "./pages/dashboard-home";
 
+import ActualizacionMasivaPrecios from "./componentes/gestion-producto/precios/actualizacion-masiva/util/actualizacion-masiva-precios";
 import ListaPrecios from "./componentes/gestion-producto/precios/lista_precios/util/lista-precios";
 import ConsultarPersonal from "./componentes/gestion-organizacion/personal/utils/consultar-personal";
 
@@ -40,7 +41,11 @@ function App() {
               <Route element={<PrivateRoute allowedRoles={[Rol.EMPLEADO, Rol.ADMINISTRADOR]} />}>
                 <Route path="marca" element={<ConsultarMarcas />} />
               </Route>
-     
+              {/* El back solo permite actualizar precios de forma masiva a Root y Administrador */}
+              <Route element={<PrivateRoute allowedRoles={[Rol.ADMINISTRADOR, Rol.ROOT]} />}>
+                <Route path="actualizacion-masiva" element={<ActualizacionMasivaPrecios />} />
+              </Route>
+
               <Route path="linea" element={<ConsultarLinea />} />
               <Route path="usuario" element={<GestionUsuario />} />
               <Route path="producto" element={<ConsultarProducto />} />

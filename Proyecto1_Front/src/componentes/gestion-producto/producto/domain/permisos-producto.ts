@@ -21,3 +21,8 @@ export const puedeVerPrecios = (roles: number[]) =>
 
 export const puedeHacerAcciones = (roles: number[]) =>
   roles.includes(Rol.ADMINISTRADOR);
+
+// El back solo permite la actualización masiva de precios a Root y Administrador.
+export const puedeActualizarPreciosMasivo = (roles: number[]) =>
+  roles.includes(Rol.ADMINISTRADOR) ||
+  roles.includes(Rol.ROOT);
