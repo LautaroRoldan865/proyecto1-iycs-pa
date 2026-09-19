@@ -30,6 +30,7 @@ import { getUsuarioId } from "../../../../utils/auth";
 import RegistrarActualizarLineaForm from "../../linea/utils/registrar-actualizar-linea";
 import PorcentajeInput from "../../../herramientas/formateo-de-campos/porcentaje-input";
 import PresentacionesSelector from "../componentes/configuracion/presentacion-selector";
+import GenerarDenominacionButton from "../componentes/boton-generar-denom";
 
 
 export default function RegistrarActualizarProductoForm({
@@ -318,6 +319,16 @@ export default function RegistrarActualizarProductoForm({
     }
   };
 
+  const lineaId = watch("lineaId");
+  const marcaId = watch("marcaId");
+  const presentacionId = watch("presentacionId");
+
+  const deshabilitarGenerar = 
+    (producto && producto.sistema > 0) || 
+    !lineaId || 
+    !marcaId || 
+    !presentacionId;
+
 
 
   return (
@@ -352,6 +363,8 @@ export default function RegistrarActualizarProductoForm({
                         inputRef={denominacionProductoRef}
                       />
                     </div>
+
+                    
 
                     
                   </div>
@@ -513,6 +526,12 @@ export default function RegistrarActualizarProductoForm({
                   // acá después abrimos el formulario de registrar presentación
                 }}
               />
+
+
+
+              <GenerarDenominacionButton disabled={deshabilitarGenerar} />
+
+
 
               </div>
 
