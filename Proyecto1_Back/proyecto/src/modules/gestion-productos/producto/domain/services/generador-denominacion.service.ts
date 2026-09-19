@@ -21,6 +21,6 @@ export class GeneradorDenominacionService {
     me deolvió: CAROYENSE ACEITES 500GRAMOS
     */
     generar(marca: Marca, linea: Linea, presentacion: Presentacion): string{
-        return `${marca.denominacion.toUpperCase()} ${linea.denominacion.toUpperCase()} ${presentacion.denominacion}}`.trim();
+        return `${marca.denominacion.toUpperCase()} ${linea.denominacion.toUpperCase()} ${presentacion.denominacion}`.trim();
     }
 }
