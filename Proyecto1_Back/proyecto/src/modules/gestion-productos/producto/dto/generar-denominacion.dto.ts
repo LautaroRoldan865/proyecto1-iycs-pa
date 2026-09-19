@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreatePresentacionDto } from './create-presentacion.dto';
+
 
 export class GenerarDenominacionDto {
 
@@ -13,8 +13,12 @@ export class GenerarDenominacionDto {
   @IsInt()
   lineaId: number;
 
-  @ApiProperty({ type: () => CreatePresentacionDto })
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  presentacionId: number;
+
+  /*@ApiProperty({ type: () => CreatePresentacionDto })
   @ValidateNested()
   @Type(() => CreatePresentacionDto)
-  presentacion: CreatePresentacionDto;
+  presentacion: CreatePresentacionDto;*/
 }

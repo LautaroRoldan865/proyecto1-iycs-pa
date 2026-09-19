@@ -8,7 +8,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { PresentacionDto } from './presentacion-producto.dto';
+import { PresentacionDto } from '../../presentacion/dto/presentacion-producto.dto';
 /*
 Se Utiliza para la busqueda y llenado de la tabla
 */

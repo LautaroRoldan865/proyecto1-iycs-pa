@@ -28,6 +28,7 @@ import { EmpresaOperacionModule } from './modules/organizacion/empresa-operacion
 import { ClienteOperacionModule } from './modules/organizacion/cliente-operacion/cliente-operacion.module';
 import { ProductoOperacionModule } from './modules/gestion-productos/producto-operacion/producto-operacion.module';
 import { BusquedasModule } from './modules/gestion-documentos/busquedas/busquedas.module';
+import { PresentacionModule } from './modules/gestion-productos/presentacion/presentacion.module';
 
 @Module({
   imports: [
@@ -49,7 +50,7 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
       //poner en false 
-      synchronize: false,  
+      synchronize: true,  
       //descomentar ssl: process.env.DB_SSL === 'true' | comentar para probarlo en local -mili
       //ssl: process.env.DB_SSL === 'true',
       //ssl: {
@@ -67,7 +68,7 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
     ClienteModule,
     PersonalModule,
     ProveedorModule,
-
+    PresentacionModule,
     UsuarioModule,
     AuthModule,
     RolModule,

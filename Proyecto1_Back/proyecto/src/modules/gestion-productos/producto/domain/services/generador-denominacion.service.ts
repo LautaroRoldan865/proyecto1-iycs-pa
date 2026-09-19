@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Linea } from "src/modules/gestion-productos/linea/domain/entities/linea.entity";
 import { Marca } from "src/modules/gestion-productos/marca/domain/entities/marca.entity";
-import { Presentacion } from "../entities/presentacion.entity";
+import { Presentacion } from "src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity";
 
 @Injectable()
 export class GeneradorDenominacionService {
@@ -21,6 +21,6 @@ export class GeneradorDenominacionService {
     me deolvió: CAROYENSE ACEITES 500GRAMOS
     */
     generar(marca: Marca, linea: Linea, presentacion: Presentacion): string{
-        return `${marca.denominacion.toUpperCase()} ${linea.denominacion.toUpperCase()} ${presentacion.cantidad}${presentacion.unidad}`.trim();
+        return `${marca.denominacion.toUpperCase()} ${linea.denominacion.toUpperCase()} ${presentacion.denominacion}}`.trim();
     }
 }
