@@ -1,10 +1,14 @@
-import { Package, PlusCircle, Search, TrendingUp } from "lucide-react";
+import { History, Package, PlusCircle, Search, TrendingUp } from "lucide-react";
 import { Button } from "../../../ui/Button";
 import { CardHeader, CardTitle } from "../../../ui/Card";
 import { Input } from "../../../ui/Input";
 import { EstadisticasSimples } from "../../../herramientas/reutilizables/estadisticas-simples";
 import { ImpresionForm } from "../../../herramientas/reutilizables/impresion-form";
-import { puedeActualizarPreciosMasivo, puedeAgregarProducto } from "../domain/permisos-producto";
+import {
+  puedeActualizarPreciosMasivo,
+  puedeAgregarProducto,
+  puedeVerHistorialPrecios,
+} from "../domain/permisos-producto";
 import { BotonNavegacion } from "./boton-navegacion";
 
 interface Props {
@@ -72,6 +76,9 @@ export function ProductosHeaderLg({
 
       </div>
       <div className="flex gap-2">
+        {puedeVerHistorialPrecios(roles) && (
+          <BotonNavegacion ruta="/admin/historial-precios" texto="Historial de precios" icono={History} soloIcono />
+        )}
         {puedeActualizarPreciosMasivo(roles) && (
           <BotonNavegacion
             ruta="/admin/actualizacion-masiva"
