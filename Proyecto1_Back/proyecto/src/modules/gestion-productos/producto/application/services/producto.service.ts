@@ -304,6 +304,10 @@ export class ProductoService {
     return this.marcaService.findAllFor(denominacion);
   }
 
+  async findAllForPresentaciones(denominacion: string){
+    return this.presentacionService.findAllFor(denominacion);
+  }
+
   async findByDenominacionCodigoProveedorFiltered(
     denominacion: string,
     skip = 0,

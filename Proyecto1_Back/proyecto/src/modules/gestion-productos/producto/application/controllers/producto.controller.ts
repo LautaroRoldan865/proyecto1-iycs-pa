@@ -88,6 +88,22 @@ export class ProductoController {
     return this.service.findAllForLineas(denominacion);
   }
 
+  /*nuevo endpoint agregado -mili */
+  @Get('find-all-for-presentaciones/select')
+  @Roles(
+    'Root',
+    'Administrador',
+    'Empleado',
+    'Repartidor',
+    'Repositor',
+    'Vendedor',
+  )
+  @UsePipes(NormalizeDenominacionSearchPipe)
+  async findAllPresentacionesFor(@Query() dto: DenominacionBusquedaDto) {
+    const { denominacion = '' } = dto;
+    return this.service.findAllForPresentaciones(denominacion);
+  }
+
   @Get('search-by-rapido')
   @Roles(
     'Root',
