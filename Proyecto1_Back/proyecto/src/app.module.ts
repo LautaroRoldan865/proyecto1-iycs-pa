@@ -49,10 +49,10 @@ import { PresentacionModule } from './modules/gestion-productos/presentacion/pre
       // TypeOrmModule.forFeature([Entidad]) en tus módulos
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
-      //poner en false 
-      synchronize: true,  
+      //poner en true para probar en local 
+      synchronize: false,  
       //descomentar ssl: process.env.DB_SSL === 'true' | comentar para probarlo en local -mili
-      //ssl: process.env.DB_SSL === 'true',
+      ssl: process.env.DB_SSL === 'true',
       //ssl: {
       //  rejectUnauthorized: true,
       //},
