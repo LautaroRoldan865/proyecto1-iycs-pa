@@ -11,8 +11,7 @@ import {
 import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ReferenciaDto } from 'src/modules/common/dto/referencia.dto';
-import { Presentacion } from '../domain/entities/presentacion.entity';
-import { PresentacionDto } from './presentacion-producto.dto';
+import { PresentacionDto } from '../../presentacion/dto/presentacion-producto.dto';
 /*
 Se Utiliza cuando se necesita la entidad producto
 */

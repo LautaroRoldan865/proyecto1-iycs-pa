@@ -19,11 +19,12 @@ import { MonetarioColumn } from 'src/modules/common/decorators/monetario-column.
 import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
 import { PorcentajeColumn } from 'src/modules/common/decorators/porcentaje-column.decorator';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
-import { Presentacion } from './presentacion.entity';
+import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
 import { HistorialPrecio } from './historial-precio.entity';
 import { PrecioInvalidoException } from '../exceptions/precio-invalido.exception';
 import { ProductoCalculoHelper } from '../helpers/producto-calculos.helper';
 import { redondearProducto } from 'src/modules/common/utils/number/redondeo';
+
 
 @Entity('producto')
 export class Producto {
@@ -151,6 +152,14 @@ export class Producto {
 
   @Column({ type: 'int', nullable: true })
   marcaId?: number;
+
+  /* ESTOS LOS SACARIAMOS PARA PODER REPRESENTARLOS EN PRESENTACION (VO)*/
+  @Column({ default: false })
+  utilizaPack: boolean;
+
+  @Column({ type: 'int', nullable: true })
+  cantidadPorPack: number | null;
+  
 
   @Column({ type: 'text', nullable: true })
   imagen?: string;

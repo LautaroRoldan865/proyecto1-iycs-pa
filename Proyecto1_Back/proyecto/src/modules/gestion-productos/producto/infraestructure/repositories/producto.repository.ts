@@ -10,8 +10,9 @@ import { DatabaseConnectionException } from 'src/modules/common/exceptions/datab
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { UpdatePrecioDto } from '../../dto/update-precio.dto';
-import { Presentacion } from '../../domain/entities/presentacion.entity';
+import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
 import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
+
 
 @Injectable()
 export class ProductoRepository implements IProductoRepository {
@@ -169,6 +170,12 @@ export class ProductoRepository implements IProductoRepository {
   async existsProductosActivosByMarca(marcaId: number): Promise<boolean> {
     return this.persistenceService.existsProductosActivosByMarca(marcaId);
   }
+
+  async existsProductosActivosByPresentacion(presentacionId: number): Promise<boolean> {
+    return this.persistenceService.existsProductosActivosByPresentacion(presentacionId);
+  }
+
+
   async existsProductosActivosByLinea(lineaId: number): Promise<boolean> {
     return this.persistenceService.existsProductosActivosByLinea(lineaId);
   }

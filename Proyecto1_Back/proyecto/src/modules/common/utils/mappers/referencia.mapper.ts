@@ -1,5 +1,5 @@
-import { UnidadPresentacion } from "src/modules/gestion-productos/producto/domain/entities/presentacion.entity";
-import { PresentacionDto } from "src/modules/gestion-productos/producto/dto/presentacion-producto.dto";
+
+import { PresentacionDto } from "src/modules/gestion-productos/presentacion/dto/presentacion-producto.dto";
 
 export interface ReferenciaDto {
   id: number;
@@ -20,16 +20,29 @@ export function toReferenciaDto<T extends { id: number; denominacion: string }>(
 
 
 
-export function toPresentacionDto<T extends { id: number; cantidad: number, unidad:UnidadPresentacion}>(
-  entity?: T,
-): PresentacionDto {
-  if (!entity) {
-    throw new Error('Entidad nula al mapear ReferenciaDto');
+export function toPresentacionDto<
+  T extends {
+    id: number;
+    denominacion: string;
+    observacion?: string;
+    sistema: number;
+    deletedAt?: Date | null;
   }
+>(
+  entity?: T | null,
+): PresentacionDto | null {
+  if (!entity) {
+    return null;
+  }
+
   return {
     id: entity.id,
-    cantidad: entity.cantidad,
-    unidad: entity.unidad,
+    denominacion: entity.denominacion,
+    observacion: entity.observacion ?? '',
+    sistema: entity.sistema,
+    deletedAt: entity.deletedAt
+      ? entity.deletedAt.toISOString()
+      : null,
   };
 }
 

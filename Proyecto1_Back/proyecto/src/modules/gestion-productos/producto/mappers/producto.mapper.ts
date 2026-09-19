@@ -39,7 +39,7 @@ export class ProductoMapper {
 
       utilizaStockMinimo: entity.utilizaStockMinimo,
       stockMinimo: entity.stockMinimo,
-      presentacion:entity.presentacion ? `${entity.presentacion.cantidad} ${entity.presentacion.unidad}`: '',
+      presentacion:entity.presentacion?.denominacion ?? '',
       sistema: entity.sistema,
       codigoReferencia: entity.codigoReferencia ?? '',
 

@@ -14,8 +14,9 @@ import { CreateProductoDto } from '../../dto/create-producto.dto';
 import { UpdatePrecioDto } from '../../dto/update-precio.dto';
 import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
-import { Presentacion } from '../../domain/entities/presentacion.entity';
+import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
 import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
+
 
 
 @Injectable()
@@ -463,6 +464,17 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     const count = await this.repository
       .createQueryBuilder('producto')
       .where('producto.marca_id = :marcaId', { marcaId })
+      .andWhere('producto.deletedAt IS NULL')
+      .limit(1)
+      .getCount();
+
+    return count > 0;
+  }
+
+   async existsProductosActivosByPresentacion(presentacionId: number): Promise<boolean> {
+    const count = await this.repository
+      .createQueryBuilder('producto')
+      .where('producto.presentacion_id = :presentacionId', { presentacionId })
       .andWhere('producto.deletedAt IS NULL')
       .limit(1)
       .getCount();

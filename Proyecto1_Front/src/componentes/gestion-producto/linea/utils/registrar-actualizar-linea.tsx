@@ -21,6 +21,7 @@ import {
   TituloAlertaConfirmacion,
   useConfirmation,
 } from "../../../herramientas/alertas/alertas-confirmacion";
+import SelectSuperlinea from "../componentes/select-superlinea";
 
 export default function RegistrarActualizarLineaForm({
   linea,
@@ -70,6 +71,7 @@ export default function RegistrarActualizarLineaForm({
           setValue("observacion", linea.observacion || null);
           setValue("stockMinimo", linea.stockMinimo || 0);
           setValue("utilizaStockMinimo", linea.utilizaStockMinimo || false);
+          setValue("superLineaId", linea.superlinea?.id);
           
         }
       } catch (error) {
@@ -77,7 +79,7 @@ export default function RegistrarActualizarLineaForm({
       }
     };
     fetchData();
-  }, []);
+  }, [linea, setValue]);
 
   const onSubmit = async (formData: FormValues) => {
     let response: ResponsePost;
@@ -153,6 +155,11 @@ export default function RegistrarActualizarLineaForm({
                     disabled={utilizaStockMinimo ? false : true}
                   />
                 </div>
+
+                <div className="lg:col-span-2 p-2">
+                  <SelectSuperlinea name="superLineaId" />
+                </div>
+
               </CardContent>
               {errors.root?.message && (
                 <div className="text-red-600 text-center mb-4">{String(errors.root.message)}</div>
