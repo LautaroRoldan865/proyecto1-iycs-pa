@@ -6,6 +6,7 @@ import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usu
 import { ProductoDto } from '../dto/producto.dto';
 
 import {
+  toPresentacionDto,
   toReferenciaDto,
 } from 'src/modules/common/utils/mappers/referencia.mapper';
 
@@ -14,7 +15,7 @@ export class ProductoMapper {
   private static readonly logger = new Logger(ProductoMapper.name);
 
   static toBusquedaDto(entity: Producto): GetProductoDto {
-    const precio = entity.precio ?? 0;
+    const precio = entity.costo + (entity.costo *(entity.margen/100));
     const alicuota = entity.alicuotaIva ?? 0;
 
     return {
@@ -37,10 +38,8 @@ export class ProductoMapper {
       ubicacion: entity.ubicacion ?? '',
 
       utilizaStockMinimo: entity.utilizaStockMinimo,
-
       stockMinimo: entity.stockMinimo,
-      utilizaPack: entity.utilizaPack,
-      cantidadPorPack: entity.cantidadPorPack ?? 0,
+      presentacion:entity.presentacion?.denominacion ?? '',
       sistema: entity.sistema,
       codigoReferencia: entity.codigoReferencia ?? '',
 
@@ -67,8 +66,9 @@ export class ProductoMapper {
   static toDto(entity: Producto): ProductoDto {
    
     const alicuota = entity.alicuotaIva ?? 0;
-    const precio = entity.precio ?? 0;
-
+    console.log('PRODUCTO:', entity);
+    console.log('PRESENTACION:', entity.presentacion);
+    console.log('PRESENTACION ID:', entity.presentacion?.id);
     return {
       id: entity.id,
       denominacion: entity.denominacion,
@@ -77,8 +77,8 @@ export class ProductoMapper {
       codigoBarra: entity.codigoBarra ?? '',
       stock: entity.stock ?? 0,
       costo: entity.costo ?? 0,
-      precio: entity.precio ?? 0,
-      porcentaje: entity.porcentaje ?? 0,
+      precio: entity.costo + (entity.costo *(entity.margen/100)),
+      margen: entity.margen ?? 0,
       costoEnDolar: entity.costoEnDolar ?? false,
       costoDolar: entity.costoDolar ?? 0,
       cotizacionDolar: entity.cotizacionDolar ?? 0,
@@ -93,12 +93,10 @@ export class ProductoMapper {
       ubicacion: entity.ubicacion ?? '',
       utilizaStockMinimo: entity.utilizaStockMinimo ?? false,
       stockMinimo: entity.stockMinimo ?? 0,
-      utilizaPack: entity.utilizaPack ?? false,
-      cantidadPorPack: entity.cantidadPorPack ?? 0,
+      presentacion: toPresentacionDto(entity.presentacion)?? null,
       sistema: entity.sistema,
       codigoReferencia: entity.codigoReferencia ?? '',
 
-    
       
     };
   }

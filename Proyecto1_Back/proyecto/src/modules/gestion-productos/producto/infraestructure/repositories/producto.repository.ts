@@ -10,6 +10,8 @@ import { DatabaseConnectionException } from 'src/modules/common/exceptions/datab
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { UpdatePrecioDto } from '../../dto/update-precio.dto';
+import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
+
 
 @Injectable()
 export class ProductoRepository implements IProductoRepository {
@@ -29,6 +31,7 @@ export class ProductoRepository implements IProductoRepository {
     data: CreateProductoDto,
     linea: Linea,
     marca: Marca,
+    presentacion: Presentacion,
     usuario: Usuario,
   ): Promise<Producto> {
     this.logger.log(`Creando un nuevo `);
@@ -37,6 +40,7 @@ export class ProductoRepository implements IProductoRepository {
         data,
         linea,
         marca,
+        presentacion,
         usuario,
       );
     } catch (error) {
@@ -52,7 +56,7 @@ export class ProductoRepository implements IProductoRepository {
     data: UpdateProductoDto,
     linea: Linea,
     marca: Marca,
-
+    presentacion:Presentacion,
     usuario: Usuario,
   ): Promise<Producto> {
     return this.persistenceService.update(
@@ -60,7 +64,7 @@ export class ProductoRepository implements IProductoRepository {
       data,
       linea,
       marca,
-
+      presentacion,
       usuario,
     );
   }
@@ -165,6 +169,12 @@ export class ProductoRepository implements IProductoRepository {
   async existsProductosActivosByMarca(marcaId: number): Promise<boolean> {
     return this.persistenceService.existsProductosActivosByMarca(marcaId);
   }
+
+  async existsProductosActivosByPresentacion(presentacionId: number): Promise<boolean> {
+    return this.persistenceService.existsProductosActivosByPresentacion(presentacionId);
+  }
+
+
   async existsProductosActivosByLinea(lineaId: number): Promise<boolean> {
     return this.persistenceService.existsProductosActivosByLinea(lineaId);
   }

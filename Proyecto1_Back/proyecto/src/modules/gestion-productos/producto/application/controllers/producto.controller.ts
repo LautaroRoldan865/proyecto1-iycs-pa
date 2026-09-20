@@ -31,6 +31,7 @@ import { NormalizeDenominacionSearchPipe } from 'src/modules/common/pipes/normal
 import { DenominacionBusquedaDto } from 'src/modules/common/dto/denominacion-busqueda.dto';
 import { SearchProductoRapidoDto } from '../../dto/search-producto-rapido.dto';
 import { ProductoService } from '../services/producto.service';
+import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 
 
 @ApiTags('Gestion Productos')
@@ -51,6 +52,11 @@ export class ProductoController {
     return this.service.create(createDto);
   }
   
+  @Post('denominacion-automatica')
+  async generarDenominacionAutomatica(@Body() dto: GenerarDenominacionDto){
+    return this.service.generarDenominacionAutomatica(dto);
+  }
+
   @Get('find-all-for-marcas/select')
   @Roles(
     'Root',
@@ -80,6 +86,38 @@ export class ProductoController {
   async findAllLineasFor(@Query() dto: DenominacionBusquedaDto) {
     const { denominacion = '' } = dto;
     return this.service.findAllForLineas(denominacion);
+  }
+
+  /*nuevo endpoint agregado -mili */
+  @Get('find-all-for-presentaciones/select')
+  @Roles(
+    'Root',
+    'Administrador',
+    'Empleado',
+    'Repartidor',
+    'Repositor',
+    'Vendedor',
+  )
+  @UsePipes(NormalizeDenominacionSearchPipe)
+  async findAllPresentacionesFor(@Query() dto: DenominacionBusquedaDto) {
+    const { denominacion = '' } = dto;
+    return this.service.findAllForPresentaciones(denominacion);
+  }
+
+  /*nuevo endpoint agregado -mili */
+  @Get('find-all-for-superlineas/select')
+  @Roles(
+    'Root',
+    'Administrador',
+    'Empleado',
+    'Repartidor',
+    'Repositor',
+    'Vendedor',
+  )
+  @UsePipes(NormalizeDenominacionSearchPipe)
+  async findAllSuperlineasFor(@Query() dto: DenominacionBusquedaDto) {
+    const { denominacion = '' } = dto;
+    return this.service.findAllForSuperlineas(denominacion);
   }
 
   @Get('search-by-rapido')
@@ -192,4 +230,6 @@ export class ProductoController {
     const data = await this.service.findByIdConAuditoria(id);
     return data;
   }
+
+
 }

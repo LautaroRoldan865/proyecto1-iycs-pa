@@ -11,7 +11,19 @@ export interface Superlinea {
   sistema: number;
 }
 
-export interface SelectSuperlinea {
+export interface SelectSuperlineaInterface {
   id: number;
   denominacion: string;
 }
+
+
+export interface DtoConsultarSuperlinea {
+  data: ConsultarSuperlinea[];
+  total: number;
+}
+
+export interface ConsultarSuperlinea {
+  id: number;
+  denominacion: string;
+}
+

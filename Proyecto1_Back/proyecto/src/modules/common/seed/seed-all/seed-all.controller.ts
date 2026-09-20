@@ -13,4 +13,9 @@ export class SeedAllController {
     this.logger.log('🔄 Ejecutando todos los seeds...');
     return this.seedService.runAllSeeds();
   }
+
+  @Get('health')
+  health() {
+      return { status: 'ok' };
+  }
 }

@@ -19,6 +19,11 @@ import { ProductoRelatedEntitiesValidator } from './infraestructure/validators/p
 import { ProductoValidationService } from './domain/services/producto-validation.service.ts';
 import { ProductoIntrinsicValidationService } from './domain/services/producto-intrinsic-validation.service.ts';
 import { ProductoDeletePolicy } from './application/policies/producto-delete.policy';
+import { PresentacionService } from '../presentacion/application/services/presentacion.service';
+import { PresentacionRepository } from '../presentacion/infraestructure/repositories/presentacion.repository';
+import { GeneradorDenominacionService } from './domain/services/generador-denominacion.service';
+import { PresentacionModule } from '../presentacion/presentacion.module';
+import { SuperlineaModule } from '../superlinea/superlinea.module';
 
 
 @Module({
@@ -26,7 +31,9 @@ import { ProductoDeletePolicy } from './application/policies/producto-delete.pol
     TypeOrmModule.forFeature([Producto]),
     CommonModule,
     forwardRef(() => LineaModule),
+    forwardRef(()=>SuperlineaModule),
     forwardRef(() => MarcaModule),
+    forwardRef(() => PresentacionModule),
     ProveedorModule,
     UsuarioModule,
   ],
@@ -40,7 +47,7 @@ import { ProductoDeletePolicy } from './application/policies/producto-delete.pol
     ProductoRelatedEntitiesValidator,
     ProductoUniquenessValidator,
     ProductoDeletePolicy,
-
+    GeneradorDenominacionService,
     {
       provide: 'IProductoRepository',
       useClass: ProductoRepository,
@@ -54,6 +61,7 @@ import { ProductoDeletePolicy } from './application/policies/producto-delete.pol
     },
     NormalizeDenominacionPipe,
     ProductoPersistenceAdapter,
+    
   ],
   
   exports: [

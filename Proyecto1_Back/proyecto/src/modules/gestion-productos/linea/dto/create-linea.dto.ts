@@ -28,6 +28,10 @@ export class CreateLineaDto {
   @IsBoolean()
   utilizaStockMinimo: boolean;
 
+  @IsNotEmpty({ message: 'La superLineaId es obligatoria.' })
+  @IsInt()
+  superLineaId:number;
+
   @IsOptional()
   @IsString()
   observacion?: string;

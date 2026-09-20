@@ -2,6 +2,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea.entity';
 import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
+import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
 
 @Injectable()
 export class ProductoValidationService {
@@ -11,10 +12,12 @@ export class ProductoValidationService {
   validarEntidadesRelacionadas(
     marca: Marca,
     linea: Linea,
+    presentacion: Presentacion,
 
   ): void {
     this.validarEntidadNoEsDeSistema(marca, 'Marca');
     this.validarEntidadNoEsDeSistema(linea, 'Línea');
+    this.validarEntidadNoEsDeSistema(presentacion, 'Presentacion');
 
   }
 

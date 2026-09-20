@@ -10,6 +10,7 @@ export class ProductoIntrinsicValidationService {
     denominacion: string;
     marcaId: number;
     lineaId: number;
+    presentacionId:number;
     alicuotaIva?: number;
     precioMayorista?: number;
     precioCliente?: number;
