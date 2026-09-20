@@ -5,7 +5,7 @@ import { SelectSuperlineaInterface, Superlinea } from "../../../../interfaces/ge
 
 const apiUrl = axiosConfig.apiUrl;
 
-const SuperLineaService = {
+const SuperLineaServiceA = {
         obtenerParaSelect: async (): Promise<SelectSuperlineaInterface[]> => {
             try {
             const token = localStorage.getItem("Token");
@@ -27,4 +27,4 @@ const SuperLineaService = {
         },
 };
 
-export default SuperLineaService;
+export default SuperLineaServiceA;

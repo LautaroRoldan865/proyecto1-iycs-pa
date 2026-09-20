@@ -36,6 +36,8 @@ import { PrecioInvalidoException } from '../../domain/exceptions/precio-invalido
 import { ActualizarPreciosMasivosUseCase } from '../use-cases/actualizar-precios-masivos.use-case';
 import { GeneradorDenominacionService } from '../../domain/services/generador-denominacion.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
+import { SuperlineaService } from 'src/modules/gestion-productos/superlinea/application/service/superlinea.service';
+import { ProductoCalculoHelper } from '../../domain/helpers/producto-calculos.helper';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -49,6 +51,7 @@ export class ProductoService {
     private readonly marcaService: MarcaService,
     private readonly proveedorService: ProveedorService,
     private readonly usuarioService: UsuarioService,
+    private readonly superlineaService: SuperlineaService,
 
     //  Domain Services
     private readonly intrinsicValidationService: ProductoIntrinsicValidationService,
@@ -311,8 +314,16 @@ export class ProductoService {
     return this.lineaService.findAllFor(denominacion);
   }
 
+  async findAllForSuperlineas(denominacion: string) {
+    return this.superlineaService.findAllFor(denominacion);
+  }
+
   async findAllForMarcas(denominacion: string) {
     return this.marcaService.findAllFor(denominacion);
+  }
+
+  async findAllForPresentaciones(denominacion: string){
+    return this.presentacionService.findAllFor(denominacion);
   }
 
   async findByDenominacionCodigoProveedorFiltered(
@@ -553,5 +564,13 @@ export class ProductoService {
 
   async obtenerHistorialPrecios(productoId:number):Promise<HistorialPrecio[]>{
     return this.repository.findHistorialPreciobyProductoId(productoId)
+  }
+
+  calcularPrecio(costo: number, margen: number) {
+    const precio = ProductoCalculoHelper.calcularPrecio(costo, margen);
+
+    return {
+      precio,
+    };
   }
 }

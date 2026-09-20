@@ -34,6 +34,7 @@ import { SearchProductoRapidoDto } from '../../dto/search-producto-rapido.dto';
 import { ProductoService } from '../services/producto.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 import { ActualizarPreciosMasivosDto } from '../../dto/actualizar-precios-masivos.dto';
+import { CalcularPrecioDto } from '../../dto/calcular-precio.dto';
 
 
 @ApiTags('Gestion Productos')
@@ -52,6 +53,12 @@ export class ProductoController {
   create(@Body() createDto: CreateProductoDto) {
     this.logger.log(`Creando un nuevo ${this.ENTITY_NAME}...`);
     return this.service.create(createDto);
+  }
+
+  @Post('calcular-precio')
+  @Roles('Root', 'Administrador', 'Empleado')
+  calcularPrecio(@Body() dto: CalcularPrecioDto) {
+    return this.service.calcularPrecio(dto.costo, dto.margen);
   }
   
   @Post('denominacion-automatica')
@@ -88,6 +95,38 @@ export class ProductoController {
   async findAllLineasFor(@Query() dto: DenominacionBusquedaDto) {
     const { denominacion = '' } = dto;
     return this.service.findAllForLineas(denominacion);
+  }
+
+  /*nuevo endpoint agregado -mili */
+  @Get('find-all-for-presentaciones/select')
+  @Roles(
+    'Root',
+    'Administrador',
+    'Empleado',
+    'Repartidor',
+    'Repositor',
+    'Vendedor',
+  )
+  @UsePipes(NormalizeDenominacionSearchPipe)
+  async findAllPresentacionesFor(@Query() dto: DenominacionBusquedaDto) {
+    const { denominacion = '' } = dto;
+    return this.service.findAllForPresentaciones(denominacion);
+  }
+
+  /*nuevo endpoint agregado -mili */
+  @Get('find-all-for-superlineas/select')
+  @Roles(
+    'Root',
+    'Administrador',
+    'Empleado',
+    'Repartidor',
+    'Repositor',
+    'Vendedor',
+  )
+  @UsePipes(NormalizeDenominacionSearchPipe)
+  async findAllSuperlineasFor(@Query() dto: DenominacionBusquedaDto) {
+    const { denominacion = '' } = dto;
+    return this.service.findAllForSuperlineas(denominacion);
   }
 
   @Get('search-by-rapido')
@@ -216,7 +255,7 @@ export class ProductoController {
   }
 
   
-
+  
 
 
 
