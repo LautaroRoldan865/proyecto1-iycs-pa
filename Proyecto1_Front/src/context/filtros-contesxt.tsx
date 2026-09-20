@@ -10,6 +10,9 @@ interface ValoresFiltros {
   codReferenciaExacto?: boolean;
   lineaId?: number;
   denominacionLinea?: string;
+  // CR-004 (CA-004.3): Filtro por SuperLínea
+  superlineaId?: number;
+  denominacionSuperlinea?: string;
   sublineaId?: number;
   denominacionSublinea?: string;
   marcaId?: number;

@@ -32,6 +32,9 @@ import { NotificacionModal } from "../../../NotificacionModal/modales/Notificaci
 import { ProductoNotificacion, EntidadTipo } from "../../../NotificacionModal/interfaces/notificacion.types";
 import { getRoles, getUsuarioId } from "../../../../utils/auth";
 import { puedeHacerAcciones } from "../domain/permisos-producto";
+// CR-004 (CA-004.3): Servicio de SuperLínea para poblar el selector del filtro.
+// Consume el endpoint GET /superlinea/for-select implementado en CR-003 (Vicky).
+import SuperlineaService from "../../superlinea/services/superlinea-service";
 
 
 export default function ConsultarProductos() {
@@ -87,12 +90,14 @@ export default function ConsultarProductos() {
 
   const filtrosInicialesConsultarProducto = useFiltrosIniciales("consultar-producto");
 
-    // Contexto de catálogos
+  // Contexto de catálogos — se agregan/actualizan las listas para los selects de la sidebar
   const {
     setLineas,
     setMarcas,
     setProveedores,
+    setSuperlineas, // CR-004 (CA-004.3): lista de SuperLíneas para el selector del filtro
   } = useCatalogosContext();
+
   
   // Setear qué filtros mostrar en la sidebar
   useEffect(() => {
@@ -102,6 +107,7 @@ export default function ConsultarProductos() {
       denominacion: true,
       codigoProveedor: true,
       linea: true,
+      superlinea: true, // CR-004 (CA-004.3): Filtro por SuperLínea
       marca: true,
       proveedor: true,
       conStock: true,
@@ -212,6 +218,39 @@ export default function ConsultarProductos() {
   useEffect(() => {
     fetchProveedores();
   }, [valoresFiltros.denominacionProveedor]);
+
+  /**
+   * CR-004 (CA-004.3): Fetch de SuperLíneas para el selector del filtro de búsqueda.
+   *
+   * Llama al endpoint GET /superlinea/for-select?denominacion=<texto> (creado en CR-003 por Vicky).
+   * Se dispara cada vez que el usuario escribe en el input de denominación del acordeón "SuperLínea"
+   * del sidebar. Los resultados se guardan en el contexto de catálogos (setSuperlineas) para que
+   * el select de react-select los muestre como opciones.
+   *
+   * El mínimo de caracteres requerido se obtiene de la configuración del sistema
+   * (configuracion.caracteresParaBusqueda), igual que el resto de los fetch del componente.
+   */
+  const fetchSuperlineas = async () => {
+    setError(null);
+    try {
+      const caracteresParaBusqueda = configuracion?.caracteresParaBusqueda ?? 4;
+      if (
+        valoresFiltros.denominacionSuperlinea &&
+        valoresFiltros.denominacionSuperlinea.length >= caracteresParaBusqueda
+      ) {
+        const superlineas = await SuperlineaService.obtenerParaSelect(
+          valoresFiltros.denominacionSuperlinea
+        );
+        setSuperlineas(superlineas);
+      }
+    } catch (err: any) {
+      console.error("Error al obtener superlineas:", err);
+      setError("No se pudieron cargar las superlineas.");
+    }
+  };
+  useEffect(() => {
+    fetchSuperlineas();
+  }, [valoresFiltros.denominacionSuperlinea]);
 
   const handleAbrirActualizarProducto = async (id: number) => {
     if (id) {
@@ -356,11 +395,17 @@ export default function ConsultarProductos() {
 
     setLoading(true);
 
+    // CA-004.6: la denominación se envía solo si tiene mínimo 2 caracteres
+    const denominacionFiltro = (valoresFiltros.denominacion ?? "").length >= 2
+      ? valoresFiltros.denominacion
+      : undefined;
+
     const filtrosConPaginacion = {
-      denominacion: valoresFiltros.denominacion,
+      denominacion: denominacionFiltro,
       codigoProveedor: valoresFiltros.codigoProveedor,
       codigoReferencia: valoresFiltros.codigoReferencia,
       lineaId: valoresFiltros.lineaId,
+      superlineaId: valoresFiltros.superlineaId, // CR-004 (CA-004.3)
       marcaId: valoresFiltros.marcaId,
       proveedorId: valoresFiltros.proveedorId,
       conStock: valoresFiltros.conStock,
@@ -400,13 +445,19 @@ export default function ConsultarProductos() {
     }
     setLoading(true);
 
+    // CA-004.6: la denominación se envía solo si tiene mínimo 2 caracteres
+    const denominacionFiltro = (valoresFiltros.denominacion ?? "").length >= 2
+      ? valoresFiltros.denominacion
+      : undefined;
+
     const filtrosConPaginacion = {
-      denominacion: valoresFiltros.denominacion,
+      denominacion: denominacionFiltro,
       codigoProveedor: valoresFiltros.codigoProveedor,
       codigoReferencia: valoresFiltros.codigoReferencia,
       codProveedorExacto: valoresFiltros.codProveedorExacto,
       codReferenciaExacto: valoresFiltros.codReferenciaExacto,
       lineaId: valoresFiltros.lineaId,
+      superlineaId: valoresFiltros.superlineaId, // CR-004 (CA-004.3)
       marcaId: valoresFiltros.marcaId,
       proveedorId: valoresFiltros.proveedorId,
       conStock: valoresFiltros.conStock,
@@ -575,8 +626,20 @@ export default function ConsultarProductos() {
                     />
                   ))}
                 </div>
-                
 
+                {/* CA-004.7: Mensaje cuando no hay resultados */}
+                {!loading && filtrosInicializados && productos.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg p-8 max-w-md">
+                      <p className="text-gray-500 dark:text-gray-400 text-base font-medium">
+                        No se encontraron productos que coincidan con los criterios de búsqueda.
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+                        Intentá modificar los filtros o ingresá al menos 2 caracteres en la denominación.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
               </CardContent>
             </Card>
