@@ -91,5 +91,5 @@ export interface IProductoRepository {
 
   findParaActualizacionPrecios(lineaId?:number): Promise<Producto[]>
   guardarLoteConHistorial(producto:Producto[], historiales: HistorialPrecio[], uow?: IUnitOfWork):Promise<void>
-  findHistorialPreciobyProdcutoId(productoId:number):Promise<HistorialPrecio[]>
+  findHistorialPreciobyProductoId(productoId:number):Promise<HistorialPrecio[]>
 }

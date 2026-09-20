@@ -16,11 +16,8 @@ export class ProductoCalculoHelper{
 
     static calcularNuevoPrecio(precioActual: number,tipoAjuste: TipoAjustePrecio,valor: number): number {
         if (tipoAjuste === TipoAjustePrecio.PORCENTAJE) {
-            return redondearProducto(
-                precioActual * (1 + valor / 100),
-            );
+            return redondearProducto( precioActual * (1 + valor / 100),);
         }
-
         return redondearProducto(precioActual + valor);
     }
 

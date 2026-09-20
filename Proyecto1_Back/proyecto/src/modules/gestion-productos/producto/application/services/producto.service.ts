@@ -210,6 +210,19 @@ export class ProductoService {
     };
   }
 
+  async findByBusquedaParcial(busqueda: string,skip: number,take: number): Promise<{ data: GetProductoDto[]; total: number }> {
+    this.logger.warn(`service`);
+    const result = await this.repository.findByBusquedaParcial(busqueda,skip,take);
+    console.log("Productos buscados:", result)
+    return {
+      data: result.data.map((producto) => {
+        return ProductoMapper.toBusquedaDto(producto);
+      }),
+      total: PaginacionUtils.totalItems(result.total),
+    };
+  }
+
+
 
   async findBy(
     denominacion: string,
@@ -562,6 +575,6 @@ export class ProductoService {
   }
 
   async obtenerHistorialPrecios(productoId:number):Promise<HistorialPrecio[]>{
-    return this.repository.findHistorialPreciobyProdcutoId(productoId)
+    return this.repository.findHistorialPreciobyProductoId(productoId)
   }
 }

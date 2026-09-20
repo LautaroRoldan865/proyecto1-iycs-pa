@@ -11,6 +11,7 @@ import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { UpdatePrecioDto } from '../../dto/update-precio.dto';
 import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
+import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
 
 
 @Injectable()
@@ -113,11 +114,6 @@ export class ProductoRepository implements IProductoRepository {
   }
 
 
-  async findByBusquedaParcial(busqueda:string, skip:number, take:number):Promise<{ data: Producto[]; total: number }> {
-    return this.persistenceService.findByBusquedaParcial(busqueda,skip,take);
-  }
-
-
   async findOne(id: number): Promise<Producto | null> {
     const entity = await this.persistenceService.findOne(id);
     return entity;
@@ -129,7 +125,7 @@ export class ProductoRepository implements IProductoRepository {
   }
 
   async remove(producto: Producto, usuario: Usuario): Promise<Producto> {
-    const entity = this.persistenceService.remove(producto, usuario);
+    const entity = await this.persistenceService.remove(producto, usuario);
     return entity;
   }
 
@@ -199,6 +195,19 @@ export class ProductoRepository implements IProductoRepository {
    return this.persistenceService.existsByCodigoProveedor(codigoProveedor, excludeId);
   }
 
-  
+  findParaActualizacionPrecios(lineaId?: number):Promise<Producto[]>{
+    return this.persistenceService.findParaActualizacionPrecios(lineaId)
+  }
 
+  guardarLoteConHistorial(producto: Producto[], historiales:HistorialPrecio[], uow?: IUnitOfWork):Promise<void>{
+    return this.persistenceService.guardarLoteConHistorial(producto, historiales, uow)
+  }
+
+  findHistorialPreciobyProductoId(productoId: number): Promise<HistorialPrecio[]> {
+      return this.persistenceService.findHistorialPreciobyProductoId(productoId)
+  }
+
+  async findByBusquedaParcial(busqueda:string, skip:number, take:number):Promise<{ data: Producto[]; total: number }> {
+    return this.persistenceService.findByBusquedaParcial(busqueda,skip,take);
+  }
 }

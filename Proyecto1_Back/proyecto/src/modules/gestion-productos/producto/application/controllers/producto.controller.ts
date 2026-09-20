@@ -34,6 +34,7 @@ import { SearchProductoRapidoDto } from '../../dto/search-producto-rapido.dto';
 import { ProductoService } from '../services/producto.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 import { ActualizarPreciosMasivosDto } from '../../dto/actualizar-precios-masivos.dto';
+import { SearchProductoBusquedaParcialDto } from '../../dto/search-producto-busqueda-parcial.dto';
 
 
 @ApiTags('Gestion Productos')
@@ -135,6 +136,20 @@ export class ProductoController {
   async searchRapido(@Query() dto: SearchProductoRapidoDto) {
     const { exacto, codigo, skip, take } = dto;
     return this.service.findByRapido(codigo, exacto, skip, take);
+  }
+
+
+  /*nuevo endpoint agregado -vicky */
+  @Get('search-by-partial')
+  //@Roles('Root', 'Administrador', 'Empleado')
+  findByBusquedaParcial(
+    @Query() busquedaDto: SearchProductoBusquedaParcialDto,
+  ) {
+    return this.service.findByBusquedaParcial(
+      busquedaDto.busqueda,
+      busquedaDto.skip,
+      busquedaDto.take
+    );
   }
 
   @Get('search-by')
@@ -246,10 +261,5 @@ export class ProductoController {
     const data = await this.service.findByIdConAuditoria(id);
     return data;
   }
-
-  
-
-
-
 
 }

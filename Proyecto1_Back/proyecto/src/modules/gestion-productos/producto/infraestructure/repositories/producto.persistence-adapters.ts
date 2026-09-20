@@ -15,7 +15,7 @@ import { UpdatePrecioDto } from '../../dto/update-precio.dto';
 import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
 import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
-
+import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
 
 
 @Injectable()
@@ -391,20 +391,21 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       .createQueryBuilder('producto')
       .leftJoinAndSelect('producto.marca', 'marca')
       .leftJoinAndSelect('producto.linea', 'linea')
-      .leftJoinAndSelect('producto.linea.superlinea', 'superlinea')
+      .leftJoinAndSelect('linea.superlinea', 'superlinea')
       .leftJoinAndSelect('producto.presentacion', 'presentacion')
       .where('producto.deletedAt IS NULL');
 
 
     if (busqueda) {
+      busqueda = busqueda.toUpperCase()
         // Parcial denominación, linea y superlinea
         query.andWhere(
           `(
-        producto.denominacion LIKE : busqueda OR 
-        producto.linea LIKE : busqueda OR 
-        producto.superlinea LIKE : busqueda
+          producto.denominacion LIKE :busqueda
+          OR linea.denominacion LIKE :busqueda
+          OR superlinea.denominacion LIKE :busqueda
       )`,
-          { busqueda: `%${busqueda}%` },
+          { busqueda: `%${busqueda.trim()}%` },
         );
       }
 
@@ -600,5 +601,35 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     }
   }
 
+  async findParaActualizacionPrecios(lineaId?: number): Promise<Producto[]> {
+      const qb = this.repository.createQueryBuilder('producto')
+      .where('producto.deletedAt  IS NULL')
+
+      if(lineaId){
+        qb.andWhere('producto.lineaId = :lineaId', { lineaId})
+      }
+
+      //analizar que considera global el profe
+      
+      return await qb.getMany()
+  }
+
+  @Transactional()
+  async guardarLoteConHistorial(producto: Producto[], historiales: HistorialPrecio[], uow?: IUnitOfWork): Promise<void> {
+      const repoProducto = this.uow.getRepository(Producto)
+      const repoHistorial = this.uow.getRepository(HistorialPrecio)
+
+      await repoProducto.save(producto)
+      await repoHistorial.save(historiales) 
+  }
+
+  async findHistorialPreciobyProductoId(productoId: number): Promise<HistorialPrecio[]> {
+      const repoHistorial = this.dataSource.getRepository(HistorialPrecio)
+
+      return await repoHistorial.find({
+        where: {producto: {id: productoId}},
+        order: {fecha: 'DESC'}
+      })
+  }
 }
 
