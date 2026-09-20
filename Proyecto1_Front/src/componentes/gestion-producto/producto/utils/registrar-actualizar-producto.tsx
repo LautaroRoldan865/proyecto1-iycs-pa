@@ -444,14 +444,15 @@ export default function RegistrarActualizarProductoForm({
                       />
                     </div>
 
-                    <Button
+                    
+                  </div>
+                  <Button
                       type="button"
                       onClick={handleCalcularPrecio}
                       disabled={!watch("costo") || watch("margen") === undefined}
                     >
                       Calcular precio
                     </Button>
-                  </div>
                  
 
                   
