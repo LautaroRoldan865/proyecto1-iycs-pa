@@ -27,6 +27,7 @@ import { SelectSuperlineaInterface } from "../../../../interfaces/gestion-produc
 import ProductoService from "../../producto/services/producto-service";
 import { useEnterFocus } from "../../../herramientas/formateo-de-campos/movimiento-campos";
 import SuperLineaService from "../../producto/services/superlinea-service";
+import RegistrarActualizarSuperLineaForm from "./registrar-actualizar-superlinea";
 
 export default function RegistrarActualizarLineaForm({
   linea,
@@ -254,6 +255,20 @@ export default function RegistrarActualizarLineaForm({
 
      
       <AlertasConfirmacion />
+
+      {mostrarFormularioSuperlinea && (
+        <RegistrarActualizarSuperLineaForm
+          onClose={() => setMostrarFormularioSuperlinea(false)}
+          onSuccess={async (mensaje) => {
+            setMostrarFormularioSuperlinea(false);
+
+            // Volver a cargar las superlíneas
+            await handleBuscarPorDenominacion("SUPERLINEA");
+
+            onSuccess(mensaje);
+          }}
+        />
+      )}
     </div>
   );
 }
