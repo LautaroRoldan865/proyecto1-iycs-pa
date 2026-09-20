@@ -550,6 +550,6 @@ export class ProductoService {
   }
 
   async obtenerHistorialPrecios(productoId:number):Promise<HistorialPrecio[]>{
-    return this.repository.findHistorialPreciobyProdcutoId(productoId)
+    return this.repository.findHistorialPreciobyProductoId(productoId)
   }
 }

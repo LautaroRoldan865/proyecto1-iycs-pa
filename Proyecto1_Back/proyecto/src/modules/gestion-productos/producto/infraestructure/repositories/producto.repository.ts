@@ -201,7 +201,7 @@ export class ProductoRepository implements IProductoRepository {
     return this.persistenceService.guardarLoteConHistorial(producto, historiales, uow)
   }
 
-  findHistorialPreciobyProdcutoId(productoId: number): Promise<HistorialPrecio[]> {
-      return this.persistenceService.findHistorialPreciobyProdcutoId(productoId)
+  findHistorialPreciobyProductoId(productoId: number): Promise<HistorialPrecio[]> {
+      return this.persistenceService.findHistorialPreciobyProductoId(productoId)
   }
 }

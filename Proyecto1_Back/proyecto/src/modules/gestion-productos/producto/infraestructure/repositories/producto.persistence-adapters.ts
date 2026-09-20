@@ -554,7 +554,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       await repoHistorial.save(historiales) 
   }
 
-  async findHistorialPreciobyProdcutoId(productoId: number): Promise<HistorialPrecio[]> {
+  async findHistorialPreciobyProductoId(productoId: number): Promise<HistorialPrecio[]> {
       const repoHistorial = this.dataSource.getRepository(HistorialPrecio)
 
       return await repoHistorial.find({
