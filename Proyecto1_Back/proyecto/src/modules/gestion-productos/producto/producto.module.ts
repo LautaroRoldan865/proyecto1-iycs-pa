@@ -23,6 +23,7 @@ import { PresentacionService } from '../presentacion/application/services/presen
 import { PresentacionRepository } from '../presentacion/infraestructure/repositories/presentacion.repository';
 import { GeneradorDenominacionService } from './domain/services/generador-denominacion.service';
 import { PresentacionModule } from '../presentacion/presentacion.module';
+import { SuperlineaModule } from '../superlinea/superlinea.module';
 
 
 @Module({
@@ -30,6 +31,7 @@ import { PresentacionModule } from '../presentacion/presentacion.module';
     TypeOrmModule.forFeature([Producto]),
     CommonModule,
     forwardRef(() => LineaModule),
+    forwardRef(()=>SuperlineaModule),
     forwardRef(() => MarcaModule),
     forwardRef(() => PresentacionModule),
     ProveedorModule,

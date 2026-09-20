@@ -30,6 +30,7 @@ import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
 import { PresentacionService } from '../../../presentacion/application/services/presentacion.service';
 import { GeneradorDenominacionService } from '../../domain/services/generador-denominacion.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
+import { SuperlineaService } from 'src/modules/gestion-productos/superlinea/application/service/superlinea.service';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -43,6 +44,7 @@ export class ProductoService {
     private readonly marcaService: MarcaService,
     private readonly proveedorService: ProveedorService,
     private readonly usuarioService: UsuarioService,
+    private readonly superlineaService: SuperlineaService,
 
     //  Domain Services
     private readonly intrinsicValidationService: ProductoIntrinsicValidationService,
@@ -298,6 +300,10 @@ export class ProductoService {
 
   async findAllForLineas(denominacion: string) {
     return this.lineaService.findAllFor(denominacion);
+  }
+
+  async findAllForSuperlineas(denominacion: string) {
+    return this.superlineaService.findAllFor(denominacion);
   }
 
   async findAllForMarcas(denominacion: string) {

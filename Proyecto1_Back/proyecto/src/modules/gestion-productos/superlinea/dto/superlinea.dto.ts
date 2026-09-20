@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsInt, IsString } from "class-validator";
+import { IsInt, IsOptional, IsString } from "class-validator";
 
 export class SuperLineaDto{
     @ApiProperty({example:123, description:"ID superlinea"})
@@ -15,5 +15,9 @@ export class SuperLineaDto{
     @ApiProperty({example:"", description:"Observacion sobre la superlinea"})
     @IsString()
     observacion:string;
+
+    @ApiProperty({ example: null, description: 'Fecha de eliminación (null si está activa)', nullable: true })
+    @IsOptional()
+    deletedAt: string | null;
 
 }
