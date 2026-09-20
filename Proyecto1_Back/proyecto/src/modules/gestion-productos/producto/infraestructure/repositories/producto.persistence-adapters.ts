@@ -15,7 +15,6 @@ import { UpdatePrecioDto } from '../../dto/update-precio.dto';
 import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
 import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
-import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
 
 
 
@@ -332,6 +331,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     };
   }
 
+
   async findByRapido(
     codigo: string,
     exacto: boolean,
@@ -368,6 +368,45 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
         );
       }
     }
+
+    query.orderBy('producto.denominacion', 'ASC');
+    query.skip(skip).take(take);
+
+    const [data, total] = await query.getManyAndCount();
+
+    this.logger.warn(`Resultados: ${data.length} encontrados`);
+
+    return { data, total };
+  }
+  
+
+  async findByBusquedaParcial(
+    busqueda: string,
+    skip: any,
+    take: number,
+  ): Promise<{ data: Producto[]; total: number }> {
+    this.logger.warn(`llega`);
+
+    const query = this.repository
+      .createQueryBuilder('producto')
+      .leftJoinAndSelect('producto.marca', 'marca')
+      .leftJoinAndSelect('producto.linea', 'linea')
+      .leftJoinAndSelect('producto.linea.superlinea', 'superlinea')
+      .leftJoinAndSelect('producto.presentacion', 'presentacion')
+      .where('producto.deletedAt IS NULL');
+
+
+    if (busqueda) {
+        // Parcial denominación, linea y superlinea
+        query.andWhere(
+          `(
+        producto.denominacion LIKE : busqueda OR 
+        producto.linea LIKE : busqueda OR 
+        producto.superlinea LIKE : busqueda
+      )`,
+          { busqueda: `%${busqueda}%` },
+        );
+      }
 
     query.orderBy('producto.denominacion', 'ASC');
     query.skip(skip).take(take);
@@ -561,35 +600,5 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     }
   }
 
-  async findParaActualizacionPrecios(lineaId?: number): Promise<Producto[]> {
-      const qb = this.repository.createQueryBuilder('producto')
-      .where('producto.deletedAt  IS NULL')
-
-      if(lineaId){
-        qb.andWhere('producto.lineaId = :lineaId', { lineaId})
-      }
-
-      //analizar que considera global el profe
-      
-      return await qb.getMany()
-  }
-
-  @Transactional()
-  async guardarLoteConHistorial(producto: Producto[], historiales: HistorialPrecio[], uow?: IUnitOfWork): Promise<void> {
-      const repoProducto = this.uow.getRepository(Producto)
-      const repoHistorial = this.uow.getRepository(HistorialPrecio)
-
-      await repoProducto.save(producto)
-      await repoHistorial.save(historiales) 
-  }
-
-  async findHistorialPreciobyProdcutoId(productoId: number): Promise<HistorialPrecio[]> {
-      const repoHistorial = this.dataSource.getRepository(HistorialPrecio)
-
-      return await repoHistorial.find({
-        where: {producto: {id: productoId}},
-        order: {fecha: 'DESC'}
-      })
-  }
 }
 

@@ -50,10 +50,10 @@ import { PresentacionModule } from './modules/gestion-productos/presentacion/pre
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
       synchronize: true,  
-      //ssl: process.env.DB_SSL === 'true',
-      ssl: {
-        rejectUnauthorized: true,
-      },
+      ssl: process.env.DB_SSL === 'true',
+      //ssl: {
+      //  rejectUnauthorized: true,
+      //},
     }),
 
     MarcaModule,

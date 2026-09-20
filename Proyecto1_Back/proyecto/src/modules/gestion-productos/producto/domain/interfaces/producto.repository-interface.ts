@@ -45,6 +45,7 @@ export interface IProductoRepository {
     take: number,
   ): Promise<{ data: Producto[]; total: number }>;
 
+  findByBusquedaParcial(busqueda:string, skip:number, take:number):Promise<{ data: Producto[]; total: number }>;
 
   findByIdWithoutRelations(id: number): Promise<Producto | null> | undefined;
 
