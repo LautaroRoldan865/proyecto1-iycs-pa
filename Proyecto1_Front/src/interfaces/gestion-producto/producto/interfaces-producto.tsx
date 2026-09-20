@@ -25,7 +25,7 @@ export interface Producto {
   usuarioUpdatedId: number;
   linea: SelectLinea;
   marca: SelectMarca;
-
+  presentacion: SelectPresentacion;
   sistema: number;
 
   stockMinimo: number;

@@ -81,7 +81,7 @@ export default function RegistrarActualizarProductoForm({
   const [calculandoPrecio, setCalculandoPrecio] = useState(false);
 
   //pone a la denominación como vacia
-  const [denominacionPresentacion, setDenominacionPresentacion] = useState("");
+  const [denominacionPresentacion, setDenominacionPresentacion] = useState(" ");
 
   //cambia el estado
   const [selectedPresentacion, setSelectedPresentacion] =
@@ -89,6 +89,7 @@ export default function RegistrarActualizarProductoForm({
   
   const [denominacionMarca, setDenominacionMarca] = useState(" ");
   const [denominacionLinea, setDenominacionLinea] = useState(" ");
+
   const [selectedLinea, setSelectedLinea] = React.useState<SelectLinea>();
   const [selectedMarca, setSelectedMarca] = React.useState<SelectMarca>();
   const [mostrarFormularioLinea, setMostrarFormularioLinea] = useState(false);
@@ -145,6 +146,9 @@ export default function RegistrarActualizarProductoForm({
 
           setValue("marcaId", producto.marca.id || 0);
           setSelectedMarca(producto.marca);
+
+          setValue("presentacionId", producto.presentacion?.id || 0);
+          setSelectedPresentacion(producto.presentacion || null);
 
           
           setValue("denominacion", producto.denominacion || "");
