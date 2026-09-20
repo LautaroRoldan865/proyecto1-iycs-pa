@@ -31,6 +31,7 @@ import RegistrarActualizarLineaForm from "../../linea/utils/registrar-actualizar
 import PorcentajeInput from "../../../herramientas/formateo-de-campos/porcentaje-input";
 import PresentacionesSelector from "../componentes/configuracion/presentacion-selector";
 import GenerarDenominacionButton from "../componentes/boton-generar-denom";
+import RegistrarActualizarPresentacionForm from "../../linea/utils/registrar-actualizar-presentacion";
 
 
 export default function RegistrarActualizarProductoForm({
@@ -93,6 +94,9 @@ export default function RegistrarActualizarProductoForm({
   const [selectedMarca, setSelectedMarca] = React.useState<SelectMarca>();
   const [mostrarFormularioLinea, setMostrarFormularioLinea] = useState(false);
   const [mostrarFormularioMarca, setMostrarFormularioMarca] = useState(false);
+  const [mostrarFormularioPresentacion, setMostrarFormularioPresentacion] =
+  useState(false);
+
   const [itemProdAlternativoSinAgregar, setItemProdAlternativoSinAgregar] = useState(false);
 
   const stock = watch(`stock`);
@@ -517,14 +521,15 @@ export default function RegistrarActualizarProductoForm({
                 }
                 onChangePresentacion={(presentacion) => {
                   setSelectedPresentacion(presentacion);
+
                   methods.setValue(
                     "presentacionId",
                     presentacion?.id || 0
                   );
                 }}
-                onAgregarPresentacion={() => {
-                  // acá después abrimos el formulario de registrar presentación
-                }}
+                onAgregarPresentacion={() =>
+                  setMostrarFormularioPresentacion(true)
+                }
               />
 
 
@@ -578,6 +583,19 @@ export default function RegistrarActualizarProductoForm({
             onSuccess={() => {
               setMostrarFormularioMarca(false);
               handleBuscarPorDenominacion("MARCA")
+            }}
+          />
+        )}
+
+        {mostrarFormularioPresentacion && (
+          <RegistrarActualizarPresentacionForm
+            onClose={() => setMostrarFormularioPresentacion(false)}
+            onSuccess={async (mensaje) => {
+              setMostrarFormularioPresentacion(false);
+
+              await handleBuscarPorDenominacion("PRESENTACION");
+
+              onSuccess(mensaje);
             }}
           />
         )}
