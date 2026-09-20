@@ -38,22 +38,18 @@ export function DatosCard({
       </div>
 
       {/* Proveedor */}
-{/*       <div className="mb-2">
-        <p className="text-xs text-gray-500">Proveedor</p>
-        <p className="text-sm text-gray-700 truncate">
-          {producto.proveedor}
-        </p>
-      </div> */}
+      {/*  
+      <div className="mb-2">
+          <p className="text-xs text-gray-500">Proveedor</p>
+          <p className="text-sm text-gray-700 truncate">
+            {producto.proveedor}
+          </p>
+        </div> */}
 
       {/* Códigos */}
       <div className="grid grid-cols-2 gap-3 mb-2">
         <div>
-          <p className="text-xs text-gray-500">Código</p>
-          <p className="text-sm text-gray-700 truncate">
-            {producto.codigoProveedor}
-          </p>
-        </div>
-        <div>
+   
           <p className="text-xs text-gray-500">Stock</p>
           <p
             className={`text-sm font-medium ${

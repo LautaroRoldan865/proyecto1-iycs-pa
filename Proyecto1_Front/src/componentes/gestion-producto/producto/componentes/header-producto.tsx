@@ -1,10 +1,15 @@
-import { Package, PlusCircle, Search, X } from "lucide-react";
+import { Package, PlusCircle, Search, X , History, TrendingUp} from "lucide-react";
 import { Button } from "../../../ui/Button";
 import { CardHeader, CardTitle } from "../../../ui/Card";
 import { Input } from "../../../ui/Input";
 import { EstadisticasSimples } from "../../../herramientas/reutilizables/estadisticas-simples";
 import { ImpresionForm } from "../../../herramientas/reutilizables/impresion-form";
-import { puedeAgregarProducto } from "../domain/permisos-producto";
+import {
+  puedeActualizarPreciosMasivo,
+  puedeAgregarProducto,
+  puedeVerHistorialPrecios,
+} from "../domain/permisos-producto";
+import { BotonNavegacion } from "./boton-navegacion";
 
 interface Props {
   roles:number[];
@@ -102,6 +107,12 @@ export function ProductosHeader({
           totalItems={total}
           currentPage={paginaActual}
         />
+        {puedeVerHistorialPrecios(roles) && (
+          <BotonNavegacion ruta="/admin/historial-precios" texto="Historial de precios" icono={History} />
+        )}
+        {puedeActualizarPreciosMasivo(roles) && (
+          <BotonNavegacion ruta="/admin/actualizacion-masiva" texto="Actualización masiva" icono={TrendingUp} />
+        )}
         {puedeAgregarProducto(roles) && (
            <Button onClick={onNuevo} className="bg-blue-500 hover:bg-blue-700 text-white">
           <PlusCircle className="mr-2 h-4 w-4" />

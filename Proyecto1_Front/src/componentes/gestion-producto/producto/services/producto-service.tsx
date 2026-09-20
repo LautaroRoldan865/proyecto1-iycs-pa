@@ -141,6 +141,27 @@ const ProductoService = {
       throw error;
     }
   },
+
+  calcularPrecio: async (payload: {costo: number, margen: number}) => {
+    try{
+      const token = localStorage.getItem("Token");
+      const headers = {
+        Authorization: token ? `Bearer ${token}` : "",
+        "Content-Type": "application/json",
+      };
+
+      const response = await axios.post(`${apiUrl}/producto/calcular-precio`, 
+        payload,
+        { headers }
+      );
+
+      return response.data;
+    }catch (error) {
+      console.error("Error al calcular precio:", error);
+      throw error;
+    }
+    
+  },
 };
 
 export default ProductoService;
