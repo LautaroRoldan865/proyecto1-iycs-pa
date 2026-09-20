@@ -13,7 +13,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
-import { CreatePresentacionDto } from './create-presentacion.dto';
+import { CreatePresentacionDto } from '../../presentacion/dto/create-presentacion.dto';
 
 export class CreateProductoDto {
   //el transform le saco el .toLowerCase() -> Si no no se cumple el CA-005.3 y CA-005.4,
@@ -125,7 +125,6 @@ export class CreateProductoDto {
   usuarioCreatedId: number;
 
   @ApiPropertyOptional({ type: () => CreatePresentacionDto })
-  @IsOptional()
   @ValidateNested()
   @Type(() => CreatePresentacionDto)
   presentacion: CreatePresentacionDto;

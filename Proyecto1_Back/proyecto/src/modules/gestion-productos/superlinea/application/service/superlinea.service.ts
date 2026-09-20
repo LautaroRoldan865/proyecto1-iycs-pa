@@ -9,6 +9,7 @@ import { PoliticaSuperLineaService } from '../../domain/services/politica-denomi
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { SuperLineaDto } from '../../dto/superlinea.dto';
 import { PoliticaEliminacionSuperLinea } from '../../domain/services/politica-eliminacion-superlinea';
+import { SuperlineaMapper } from '../../mappers/superlinea.mapper';
 
 @Injectable()
 export class SuperlineaService {
@@ -72,21 +73,30 @@ export class SuperlineaService {
 
     async findAllForSelect(denominacion: string = ''): Promise<SuperLineaDto[]> {
         const items = await this.repository.findAllFor(denominacion);
-        return items.map(item => ({
-            id: item.id,
-            denominacion: item.denominacion,
-            observacion: item.observacion ?? '',
-        }));
+        return items.map(item => SuperlineaMapper.toDto(item));
     }
+
+    async findAllFor(
+        denominacion: string,
+      ): Promise<{ data: SuperLineaDto[]; total: number }> {
+        const result = await this.repository.findAllFor(denominacion);
+    
+        this.logger.log(
+          ` ser Buscando o ${denominacion}    result.length=${result.length}}`,
+        );
+    
+        const data: SuperLineaDto[] = result.map((linea) => SuperlineaMapper.toDto(linea));
+    
+        return {
+          data,
+          total: 1,
+        };
+      }
   
 
     async findDtoById(id: number): Promise<SuperLineaDto> {
         const entity = await this.findEntityById(id);
-        return {
-            id: entity.id,
-            denominacion: entity.denominacion,
-            observacion: entity.observacion ?? '',
-        };
+        return SuperlineaMapper.toDto(entity);
     }
 
 
