@@ -35,6 +35,7 @@ import { puedeHacerAcciones } from "../domain/permisos-producto";
 // CR-004 (CA-004.3): Servicio de SuperLínea para poblar el selector del filtro.
 // Consume el endpoint GET /superlinea/for-select implementado en CR-003 (Vicky).
 import SuperlineaService from "../../superlinea/services/superlinea-service";
+import { BusquedaParcialProducto } from "../interfaces/interface-producto-busqueda-parcial";
 
 
 export default function ConsultarProductos() {
@@ -55,11 +56,11 @@ export default function ConsultarProductos() {
   const [productoNotificacionSeleccionado, setProductoNotificacionSeleccionado] = useState<ProductoNotificacion | null>(null);
   const usuarioId = getUsuarioId();
   const { configuracion } = useConfiguracionSistema();
-  const [codigo, setCodigo] = useState<string>("");
-  const [exacto, setExacto] = useState<boolean>(true);
+  const [busqueda, setBusqueda] = useState<string>("");
   const [auditoria, setAuditoria] = useState<Auditoria>({} as Auditoria);
   const isMounted = useRef(false);
   const inicializacionCompleta = useRef(false);
+  const busquedaParcialActiva = useRef(false);
 
   
    // =========================
@@ -85,7 +86,7 @@ export default function ConsultarProductos() {
     limpiarFiltros,
     buscar,
     setBuscar,
-    setBusquedaRapida,
+    setBusquedaParcial,
   } = useFiltrosContext();
 
   const filtrosInicialesConsultarProducto = useFiltrosIniciales("consultar-producto");
@@ -118,14 +119,6 @@ export default function ConsultarProductos() {
       inicializacionCompleta.current = true;
     }, 500);
   }, []);
-
-  useEffect(() => {
-    if (!inicializacionCompleta.current) return;
-    const timer = setTimeout(() => {
-      handleBuscarProductosRapido();
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [codigo, exacto]);
 
   useEffect(() => {
     if (buscar.cont > 0 && buscar.componente === "consultar-producto") {
@@ -439,7 +432,8 @@ export default function ConsultarProductos() {
   };
 
   const handleBuscarProductos = async (botonBuscar?: boolean) => {
-    setBusquedaRapida(false);
+    busquedaParcialActiva.current = false;
+    setBusquedaParcial(false);
     if (botonBuscar) {
       resetearPaginacion();
     }
@@ -471,30 +465,47 @@ export default function ConsultarProductos() {
     setLoading(false);
   };
 
+  const handleLimpiarBusqueda = () => {
+    setBusqueda("");
+    busquedaParcialActiva.current = false;
+    setBusquedaParcial(false);
+
+    if (paginaActual === 1) {
+      handleBuscarProductos();
+    } else {
+      resetearPaginacion();
+    }
+  };
+
   const handleBuscarProductosRapido = async (botonBuscar?: boolean) => {
-    setBusquedaRapida(true);
+    busquedaParcialActiva.current = true;
+    setBusquedaParcial(true);
     if (botonBuscar) {
       resetearPaginacion();
     }
     setLoading(true);
 
-    const filtrosConPaginacion = {
-      codigo: codigo,
-      exacto: exacto,
-      skip: skip,
-      take: take,
+    const parametros:  BusquedaParcialProducto = {
+      busqueda,
+      skip,
+      take,
     };
 
-    const productosFiltrados = await ProductoService.obtenerRapido(filtrosConPaginacion);
+
+    const productosFiltrados = await ProductoService.obtenerBusquedaParcial(parametros);
     setProductos(productosFiltrados.data);
     setEntidadesTotales(productosFiltrados.total);
     setLoading(false);
   };
+  
 
   // MANEJO DE PAGINACION ===========================================
 
   useEffect(() => {
-    if (filtrosInicializados === true) {
+    if (filtrosInicializados !== true) return; 
+    if (busquedaParcialActiva.current) {
+      handleBuscarProductosRapido();
+    } else {
       handleBuscarProductos();
     }
   }, [paginaActual, filtrosInicializados, take]);
@@ -565,11 +576,10 @@ export default function ConsultarProductos() {
               {/*  HEADER Desktop */}
               <ProductosHeader
                 roles={getRoles()}
-                codigo={codigo}
-                exacto={exacto}
-                onChangeCodigo={setCodigo}
-                onChangeExacto={setExacto}
-                onBuscarRapido={() => handleBuscarProductosRapido(true)}
+                busqueda={busqueda}
+                onChangeBusqueda={setBusqueda}
+                onBuscarParcial={() => handleBuscarProductosRapido(true)}
+                onLimpiarBusqueda={handleLimpiarBusqueda}
                 onNuevo={openModal}
                 total={entidadesTotales}
                 mostrados={productos.length}
@@ -581,12 +591,11 @@ export default function ConsultarProductos() {
 
               <div className="lg:hidden">
                 <ProductosHeaderLg
-                codigo={codigo}
-                exacto={exacto}
+                busqueda={busqueda}
                 roles={getRoles()}
-                onChangeCodigo={setCodigo}
-                onChangeExacto={setExacto}
-                onBuscarRapido={() => handleBuscarProductosRapido(true)}
+                onChangeBusqueda={setBusqueda}
+                onBuscarParcial={() => handleBuscarProductosRapido(true)}
+                onLimpiarBusqueda={handleLimpiarBusqueda}
                 onNuevo={openModal}
                 total={entidadesTotales}
                 mostrados={productos.length}
@@ -704,4 +713,5 @@ export default function ConsultarProductos() {
 
     </div>
   );
+  
 }

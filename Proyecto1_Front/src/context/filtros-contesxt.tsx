@@ -67,8 +67,8 @@ interface FiltrosContextType {
 
   buscar: BuscarEnFiltros;
   setBuscar: (valor: BuscarEnFiltros) => void;
-  busquedaRapida: boolean;
-  setBusquedaRapida: (valor: boolean) => void;
+  busquedaParcial: boolean;
+  setBusquedaParcial: (valor: boolean) => void;
   buscarMarcas: number;
   setBuscarMarcas: (valor: number) => void;
   buscarLineas: number;
@@ -125,7 +125,7 @@ export const FiltrosProvider = ({ children }: { children: ReactNode }) => {
 
 
   const [buscar, setBuscar] = useState<BuscarEnFiltros>({} as BuscarEnFiltros);
-  const [busquedaRapida, setBusquedaRapida] = useState<boolean>(false);
+  const [busquedaParcial, setBusquedaParcial] = useState<boolean>(false);
   const [buscarMarcas, setBuscarMarcas] = useState<number>(0);
   const [buscarLineas, setBuscarLineas] = useState<number>(0);
 
@@ -140,8 +140,8 @@ export const FiltrosProvider = ({ children }: { children: ReactNode }) => {
 
         buscar,
         setBuscar,
-        busquedaRapida,
-        setBusquedaRapida,
+        busquedaParcial,
+        setBusquedaParcial,
         buscarMarcas,
         setBuscarMarcas,
         buscarLineas,
