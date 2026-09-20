@@ -1,10 +1,15 @@
-import { Package, PlusCircle, Search } from "lucide-react";
+import { History, Package, PlusCircle, Search, TrendingUp } from "lucide-react";
 import { Button } from "../../../ui/Button";
 import { CardHeader, CardTitle } from "../../../ui/Card";
 import { Input } from "../../../ui/Input";
 import { EstadisticasSimples } from "../../../herramientas/reutilizables/estadisticas-simples";
 import { ImpresionForm } from "../../../herramientas/reutilizables/impresion-form";
-import { puedeAgregarProducto } from "../domain/permisos-producto";
+import {
+  puedeActualizarPreciosMasivo,
+  puedeAgregarProducto,
+  puedeVerHistorialPrecios,
+} from "../domain/permisos-producto";
+import { BotonNavegacion } from "./boton-navegacion";
 
 interface Props {
   codigo: string;
@@ -70,9 +75,22 @@ export function ProductosHeaderLg({
         </div>
 
       </div>
-      {puedeAgregarProducto(roles) && (<Button className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1.5 px-3 py-2 rounded-lg shadow-sm"
-        onClick={onNuevo}><PlusCircle className="h-4 w-4" /></Button>)}
-      
+      <div className="flex gap-2">
+        {puedeVerHistorialPrecios(roles) && (
+          <BotonNavegacion ruta="/admin/historial-precios" texto="Historial de precios" icono={History} soloIcono />
+        )}
+        {puedeActualizarPreciosMasivo(roles) && (
+          <BotonNavegacion
+            ruta="/admin/actualizacion-masiva"
+            texto="Actualización masiva"
+            icono={TrendingUp}
+            soloIcono
+          />
+        )}
+        {puedeAgregarProducto(roles) && (<Button className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1.5 px-3 py-2 rounded-lg shadow-sm"
+          onClick={onNuevo}><PlusCircle className="h-4 w-4" /></Button>)}
+      </div>
+
       {/* Botón de agregar e impresion por el momento no lo mostramos en el celu */}
       {/* <div className="flex items-center justify-between gap-3">
         <Button
