@@ -28,6 +28,10 @@ export class CreateLineaDto {
   @IsBoolean()
   utilizaStockMinimo: boolean;
 
+  @IsNotEmpty({ message: 'La superLineaId es obligatoria.' })
+  @IsInt()
+  superlineaId:number;
+
   @IsOptional()
   @IsString()
   observacion?: string;
@@ -38,11 +42,4 @@ export class CreateLineaDto {
   @IsInt({ message: 'El usuarioCreatedId debe ser un número entero.' })
   usuarioCreatedId: number;
 
-  @ApiProperty({
-    example: null,
-    description: 'Fecha de eliminación (null si está activa)',
-    nullable: true,
-  })
-  @IsOptional()
-  deletedAt: string | null;
 }

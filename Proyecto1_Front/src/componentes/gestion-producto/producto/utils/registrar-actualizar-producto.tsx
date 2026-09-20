@@ -29,6 +29,9 @@ import MarcasSelector from "../componentes/configuracion/marcas-selector";
 import { getUsuarioId } from "../../../../utils/auth";
 import RegistrarActualizarLineaForm from "../../linea/utils/registrar-actualizar-linea";
 import PorcentajeInput from "../../../herramientas/formateo-de-campos/porcentaje-input";
+import PresentacionesSelector from "../componentes/configuracion/presentacion-selector";
+import GenerarDenominacionButton from "../componentes/boton-generar-denom";
+import RegistrarActualizarPresentacionForm from "../../linea/utils/registrar-actualizar-presentacion";
 
 
 export default function RegistrarActualizarProductoForm({
@@ -45,19 +48,14 @@ export default function RegistrarActualizarProductoForm({
 
   const { configuracion } = useConfiguracionSistema();
   const [rStockCritico, setStockCritico] = useState(false);
-  const [pack, setPack] = useState(false);
-  const [usaOferta, setUsaOferta] = useState(false);
+
   const [lineaSeleccionada, setLineaSeleccionada] = useState<Linea>({} as Linea);
 
   console.log("Configuración del sistema:", configuracion);
 
   const methods = useForm<FormValues>({
-    resolver: yupResolver(schema(rStockCritico, pack, usaOferta)),
-    defaultValues: producto
-      ? transformData(producto)
-      : {
-          alicuotaIva: AlicuotaIva.ALICUOTA_21,
-        },
+    resolver: yupResolver(schema(rStockCritico)),
+   
   });
 
   const {
@@ -76,35 +74,54 @@ export default function RegistrarActualizarProductoForm({
 
   const [marcas, setMarcas] = React.useState<SelectMarca[]>([]);
   const [lineas, setLineas] = React.useState<SelectLinea[]>([]);
+  const [presentaciones, setPresentaciones] = React.useState<SelectPresentacion[]>([]);
+
+  //nuevo, para calcular el precio
+  const [precioCalculado, setPrecioCalculado] = useState<number>(0);
+  const [calculandoPrecio, setCalculandoPrecio] = useState(false);
+
+  //pone a la denominación como vacia
+  const [denominacionPresentacion, setDenominacionPresentacion] = useState(" ");
+
+  //cambia el estado
+  const [selectedPresentacion, setSelectedPresentacion] =
+    React.useState<SelectPresentacion | null>(null);
   
   const [denominacionMarca, setDenominacionMarca] = useState(" ");
   const [denominacionLinea, setDenominacionLinea] = useState(" ");
+
   const [selectedLinea, setSelectedLinea] = React.useState<SelectLinea>();
   const [selectedMarca, setSelectedMarca] = React.useState<SelectMarca>();
   const [mostrarFormularioLinea, setMostrarFormularioLinea] = useState(false);
   const [mostrarFormularioMarca, setMostrarFormularioMarca] = useState(false);
+  const [mostrarFormularioPresentacion, setMostrarFormularioPresentacion] =
+  useState(false);
+
   const [itemProdAlternativoSinAgregar, setItemProdAlternativoSinAgregar] = useState(false);
 
   const stock = watch(`stock`);
   const stockMinimo = watch("stockMinimo");
-  const cantidadPorPack = watch("cantidadPorPack");
+
   const utilizaStockMinimo = watch("utilizaStockMinimo");
-  const utilizaPack = watch("utilizaPack");
+
   
 
   //=============================== CONSTANTES PARA MOVIMIENTO ENTRE CAMPOS ==================================
   const denominacionProductoRef = useRef<HTMLInputElement>(null);
   useEnterFocus(denominacionProductoRef);
   const observacionRef = useRef<HTMLInputElement>(null);
-  const ubicacionRef = useRef<HTMLInputElement>(null);
+
   const selectTipoProductoRef = useRef<HTMLDivElement>(null);
-  const codigoBarraRef = useRef<HTMLInputElement>(null);
-  const selectAlicuotaIvaRef = useRef<HTMLDivElement>(null);
+
+ 
   const precioOfertaRef = useRef<HTMLInputElement>(null);
   const denominacionLineaRef = useRef<HTMLInputElement>(null);
   const selectLineaRef = useRef<HTMLDivElement>(null);
   const denominacionMarcaRef = useRef<HTMLInputElement>(null);
   const selectMarcaRef = useRef<HTMLDivElement>(null);
+
+  const denominacionPresentacionRef = useRef<HTMLInputElement>(null);
+  const selectPresentacionRef = useRef<HTMLDivElement>(null);
 
   const enterToObservacion = useEnterFocus(observacionRef);
   const enterToPrecioOferta = useEnterFocus(precioOfertaRef);
@@ -112,26 +129,13 @@ export default function RegistrarActualizarProductoForm({
 
   //=============================== FUNCIONALIDAD ==================================
 
-  useEffect(() => {
-    if (!utilizaStockMinimo) {
-      setValue("stockMinimo", 0);
-    }
-    if (!utilizaPack) {
-      setValue("cantidadPorPack", 0);
-    }
-    
-  }, [utilizaStockMinimo, utilizaPack, false, setValue]);
+
 
   useEffect(() => {
     setValue("stockMinimo", lineaSeleccionada.stockMinimo || 0);
     setValue("utilizaStockMinimo", lineaSeleccionada.utilizaStockMinimo || false);
   }, [lineaSeleccionada]);
 
-  useEffect(() => {
-    setPack(utilizaPack || false);
-    setStockCritico(utilizaStockMinimo || false);
-    setUsaOferta(false);
-  }, [utilizaPack, utilizaStockMinimo, false]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -143,21 +147,21 @@ export default function RegistrarActualizarProductoForm({
           setValue("marcaId", producto.marca.id || 0);
           setSelectedMarca(producto.marca);
 
+          setValue("presentacionId", producto.presentacion?.id || 0);
+          setSelectedPresentacion(producto.presentacion || null);
+
           
           setValue("denominacion", producto.denominacion || "");
           setValue("observacion", producto.observacion || null);
-          setValue("codigoProveedor", producto.codigoProveedor || "");
-          setValue("codigoBarra", producto.codigoBarra || null);
+        
           setValue("stock", producto.stock || 0);
           setValue("costo", producto.costo || 0);
           
           //setValue("oferta", producto.oferta || false);
-          setValue("alicuotaIva", producto.alicuotaIva || 0);
-
+      
           setValue("stockMinimo", producto.stockMinimo || 0);
           setValue("utilizaStockMinimo", producto.utilizaStockMinimo || false);
-          setValue("cantidadPorPack", producto.cantidadPorPack || 0);
-          setValue("utilizaPack", producto.utilizaPack || false);
+        
         
           console.error("llega aca", producto);
         
@@ -237,9 +241,62 @@ export default function RegistrarActualizarProductoForm({
           console.log("No se encontró una marca con la denominación ingresada.");
         }
       }
+      if (select === "PRESENTACION") {
+        const presentaciones = await ProductoService.obtenerTotales(
+          { denominacion: denominacionPresentacion }, "presentaciones"
+        );
+
+        if(presentaciones){
+          console.log("Presentaciones encontradas: ", presentaciones);
+          setPresentaciones(presentaciones.data);
+        }else{
+          console.log("No se encontraron presentaciones.")
+        }
+      }
       
     } catch (error) {
       console.error("Error al buscar por código:", error);
+    }
+  };
+
+  const handleCalcularPrecio = async () => {
+    const costo = watch("costo");
+    const margen = watch("margen");
+
+    if (costo === undefined || costo === null) {
+      setError("costo", {
+        type: "manual",
+        message: "El costo es obligatorio para calcular el precio.",
+      });
+      return;
+    }
+
+    if (margen === undefined || margen === null) {
+      setError("margen", {
+        type: "manual",
+        message: "El margen es obligatorio para calcular el precio.",
+      });
+      return;
+    }
+
+    try {
+      setCalculandoPrecio(true);
+
+      const response = await ProductoService.calcularPrecio({
+        costo: Number(costo),
+        margen: Number(margen),
+      });
+
+      setPrecioCalculado(response.precio);
+    } catch (error) {
+      const errorMessage = parseApiError(error);
+
+      setError("root", {
+        type: "manual",
+        message: errorMessage,
+      });
+    } finally {
+      setCalculandoPrecio(false);
     }
   };
 
@@ -255,6 +312,10 @@ export default function RegistrarActualizarProductoForm({
         handleBuscarPorDenominacion("MARCA");
       }
 
+      if(select === "PRESENTACION"){
+        handleBuscarPorDenominacion("PRESENTACION");
+      }
+
       // Esperar un poco (opcional, si el botón hace una búsqueda antes)
       setTimeout(() => {
         let selectDiv: HTMLDivElement | null = null;
@@ -265,6 +326,10 @@ export default function RegistrarActualizarProductoForm({
 
         if (select === "LINEA") {
           selectDiv = selectLineaRef.current;
+        }
+
+        if(select==="PRESENTACION"){
+          selectDiv = selectPresentacionRef.current;
         }
 
         if (select === "TIPO-PRODUCTO") {
@@ -285,6 +350,16 @@ export default function RegistrarActualizarProductoForm({
       }, 300); // Ajustá este delay según el tiempo de búsqueda, si es necesario
     }
   };
+
+  const lineaId = watch("lineaId");
+  const marcaId = watch("marcaId");
+  const presentacionId = watch("presentacionId");
+
+  const deshabilitarGenerar = 
+    (producto && producto.sistema > 0) || 
+    !lineaId || 
+    !marcaId || 
+    !presentacionId;
 
 
 
@@ -322,28 +397,11 @@ export default function RegistrarActualizarProductoForm({
                     </div>
 
                     
+
+                    
                   </div>
 
-                  <FormInput
-                    name="codigoProveedor"
-                    label="Codigo Interno"
-                    placeholder="Ingresa el Codigo Interno"
-                    disabled={producto && producto.sistema > 0 ? true : false}
-                  />
-
-                  <FormInput
-                    name="codigoReferencia"
-                    label="Codigo Referencia"
-                    placeholder="Ingresa el codigo de referencia"
-                  />
-
-                  <FormInput
-                    name="codigoBarra"
-                    label="Código De Barra"
-                    placeholder="Ingresa el código de barra (opcional)"
-                    inputRef={codigoBarraRef}
-                    onKeyDown={(e) => handleEnterEnSelect(e, "ALICUOTA-IVA")}
-                  />
+               
 
                   {/* <FormInput
                     name="costo"
@@ -371,80 +429,40 @@ export default function RegistrarActualizarProductoForm({
                     maxDigits={9}
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
-                  <PriceInput
-                    name="precio"
-                    label="Precio"
-                    value={watch("precio") || 0}
-                    onChange={(value) => setValue("precio", value, { shouldValidate: true })}
-                    maxDigits={9}
+                   <PorcentajeInput
+                    name="margen"
+                    label="Margen"
+                    value={watch("margen") || 0}
+                    onChange={(value) => setValue("margen", value, { shouldValidate: true })}
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
-                  <PorcentajeInput
-                    name="porcentaje"
-                    label="Porcentaje"
-                    value={watch("porcentaje") || 0}
-                    onChange={(value) => setValue("porcentaje", value, { shouldValidate: true })}
-                    disabled={producto && producto.sistema > 0 ? true : false}
-                  />
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <PriceInput
+                        name="precio"
+                        label="Precio"
+                        value={precioCalculado}
+                        onChange={() => {}}
+                        maxDigits={9}
+                        disabled={true}
+                      />
+                    </div>
+
+                    
+                  </div>
+                  <Button
+                      type="button"
+                      onClick={handleCalcularPrecio}
+                      disabled={!watch("costo") || watch("margen") === undefined}
+                    >
+                      Calcular precio
+                    </Button>
+                 
 
                   
 
 
-                  <FormInput
-                    name="ubicacion"
-                    label="Ubicación"
-                    placeholder="Ingresa una ubicación (opcional)"
-                    onKeyDown={(e) => handleEnterEnSelect(e, "TIPO-PRODUCTO")}
-                    inputRef={ubicacionRef}
-                  />
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Alicuota IVA</label>
-                    <div ref={selectAlicuotaIvaRef} className="w-full">
-                      <Select
-                        value={
-                          Object.entries(AlicuotaIva)
-                            .map(([key, value]) => ({
-                              id: value,
-                              denominacion: key === "ALICUOTA_105" ? "10.5" : key.replace("ALICUOTA_", ""),
-                            }))
-                            .find((option) => option.id === watch("alicuotaIva")) || null
-                        }
-                        options={Object.entries(AlicuotaIva).map(([key, value]) => ({
-                          id: value,
-                          denominacion: key === "ALICUOTA_105" ? "10.5" : key.replace("ALICUOTA_", ""),
-                        }))}
-                        onKeyDown={enterToPrecioOferta}
-                        getOptionLabel={(option) => option.denominacion}
-                        getOptionValue={(option) => String(option.id)}
-                        isDisabled={producto && producto.sistema > 0 ? true : false}
-                        onChange={(selectedOption) => {
-                          methods.setValue(`alicuotaIva`, selectedOption?.id || 0);
-                        }}
-                        className="text-black"
-                        menuPortalTarget={document.body}
-                        styles={{
-                          control: (base) => ({
-                            ...base,
-                            color: "black",
-                          }),
-                          singleValue: (base) => ({
-                            ...base,
-                            color: "black",
-                          }),
-                          option: (base, { isSelected, isFocused }) => ({
-                            ...base,
-                            color: isSelected ? "white" : "black",
-                            backgroundColor: isSelected ? "#3b82f6" : isFocused ? "#93c5fd" : "white",
-                          }),
-                          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                        }}
-                      />
-                      {errors.alicuotaIva && (
-                        <small className="text-red-500">{errors.alicuotaIva?.message as string}</small>
-                      )}
-                    </div>
-                  </div>
+         
 
                   <div className="flex-1 min-w-[120px]">
                     {producto ? (
@@ -484,24 +502,9 @@ export default function RegistrarActualizarProductoForm({
                   
 
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-1 min-w-[140px]">
-                    <div className="col-span-full flex flex-wrap gap-4 mt-8">
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          {...methods.register("utilizaPack")}
-                          className={`w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500`}
-                          disabled={producto && producto.sistema > 0 ? true : false}
-                        />
-                      </label>
-                    </div>
+                    
 
-                    <CantidadesInput
-                      name={`cantidadPorPack`}
-                      label="Cantidad Pack"
-                      value={cantidadPorPack || 0}
-                      onChange={(value) => setValue(`cantidadPorPack`, Number(value))}
-                      disabled={utilizaPack ? false : true}
-                    />
+              
                   </div>
                 </div>
               </div>
@@ -543,6 +546,38 @@ export default function RegistrarActualizarProductoForm({
                 }}
                 onAgregarMarca={() => setMostrarFormularioMarca(true)}
               />
+
+              <PresentacionesSelector
+                denominacionPresentacion={denominacionPresentacion}
+                setDenominacionPresentacion={setDenominacionPresentacion}
+                denominacionPresentacionRef={denominacionPresentacionRef}
+                selectPresentacionRef={selectPresentacionRef}
+                presentaciones={presentaciones}
+                selectedPresentacion={selectedPresentacion}
+                presentacionId={watch("presentacionId")}
+                disabled={producto && producto.sistema > 0}
+                error={errors.presentacionId?.message}
+                onEnterPresentacion={(e) =>
+                  handleEnterEnSelect(e, "PRESENTACION")
+                }
+                onChangePresentacion={(presentacion) => {
+                  setSelectedPresentacion(presentacion);
+
+                  methods.setValue(
+                    "presentacionId",
+                    presentacion?.id || 0
+                  );
+                }}
+                onAgregarPresentacion={() =>
+                  setMostrarFormularioPresentacion(true)
+                }
+              />
+
+
+
+              <GenerarDenominacionButton disabled={deshabilitarGenerar} />
+
+
 
               </div>
 
@@ -589,6 +624,19 @@ export default function RegistrarActualizarProductoForm({
             onSuccess={() => {
               setMostrarFormularioMarca(false);
               handleBuscarPorDenominacion("MARCA")
+            }}
+          />
+        )}
+
+        {mostrarFormularioPresentacion && (
+          <RegistrarActualizarPresentacionForm
+            onClose={() => setMostrarFormularioPresentacion(false)}
+            onSuccess={async (mensaje) => {
+              setMostrarFormularioPresentacion(false);
+
+              await handleBuscarPorDenominacion("PRESENTACION");
+
+              onSuccess(mensaje);
             }}
           />
         )}

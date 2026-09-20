@@ -5,6 +5,7 @@ import { MarcaModule } from './modules/gestion-productos/marca/marca.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LineaModule } from './modules/gestion-productos/linea/linea.module';
 import { ProductoModule } from './modules/gestion-productos/producto/producto.module';
+import { SuperlineaModule } from './modules/gestion-productos/superlinea/superlinea.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProveedorModule } from './modules/organizacion/proveedor/proveedor.module';
 import { PersonalModule } from './modules/organizacion/personal/personal.module';
@@ -27,6 +28,7 @@ import { EmpresaOperacionModule } from './modules/organizacion/empresa-operacion
 import { ClienteOperacionModule } from './modules/organizacion/cliente-operacion/cliente-operacion.module';
 import { ProductoOperacionModule } from './modules/gestion-productos/producto-operacion/producto-operacion.module';
 import { BusquedasModule } from './modules/gestion-documentos/busquedas/busquedas.module';
+import { PresentacionModule } from './modules/gestion-productos/presentacion/presentacion.module';
 
 @Module({
   imports: [
@@ -42,12 +44,14 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       database: process.env.DB_DATABASE,
       timezone: '-03:00',
 
-      //  Auto-carga de entidades desde los módulos
+      // Auto-carga de entidades desde los módulos
       // Las entidades se registran automáticamente cuando usás
       // TypeOrmModule.forFeature([Entidad]) en tus módulos
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       //entities,
+      //poner en true para probar en local 
       synchronize: false,  
+      //descomentar ssl: process.env.DB_SSL === 'true' | comentar para probarlo en local -mili
       //ssl: process.env.DB_SSL === 'true',
       ssl: {
         rejectUnauthorized: true,
@@ -56,6 +60,7 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
 
     MarcaModule,
     LineaModule,
+    SuperlineaModule,
     ProductoModule,
     CondicionIvaModule,
     LocalidadModule,
@@ -63,7 +68,7 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
     ClienteModule,
     PersonalModule,
     ProveedorModule,
-
+    PresentacionModule,
     UsuarioModule,
     AuthModule,
     RolModule,

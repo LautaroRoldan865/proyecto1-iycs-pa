@@ -1,4 +1,5 @@
-import { Transform } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -9,13 +10,18 @@ import {
   IsNumber,
   IsInt,
   IsEnum,
+  ValidateNested,
 } from 'class-validator';
 import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
+import { CreatePresentacionDto } from '../../presentacion/dto/create-presentacion.dto';
 
 export class CreateProductoDto {
-  @Transform(({ value }) => value.trim().toLowerCase())
+  //el transform le saco el .toLowerCase() -> Si no no se cumple el CA-005.3 y CA-005.4,
+  @Transform(({ value }) => value.trim())
   @IsString({ message: 'La denominación debe ser una cadena de texto.' }) // Valida que sea string
-  @IsNotEmpty({ message: 'La denominación no puede estar vacía.' }) // Valida que no esté vacía
+  //lo comento por ahora, porque se supone que al generarla automáticamente puede ser opcional que venga esto -mili
+  //@IsNotEmpty({ message: 'La denominación no puede estar vacía.' }) // Valida que no esté vacía
+  @IsOptional()
   @MaxLength(255, { message: 'La denominación no puede estar vacía.' })
   /*  @Matches(/^[A-Za-z0-9 áéíóúÁÉÍÓÚñÑ.\-/]+$/, {
     message:
@@ -77,13 +83,6 @@ export class CreateProductoDto {
   @IsNumber()
   costo?: number;
 
-  @IsBoolean()
-  utilizaPack: boolean;
-
-  @IsOptional()
-  @IsInt()
-  cantidadPorPack?: number;
-
   @IsOptional()
   @IsNumber()
   costoDolar?: number;
@@ -97,17 +96,19 @@ export class CreateProductoDto {
   @IsInt({ message: 'La marca  debe ser un número entero.' })
   marcaId: number;
 
+  @IsNotEmpty({ message: 'La presentación es obligatoria.' })
+  @IsInt({ message: 'La presentación  debe ser un número entero.' })
+  presentacionId:number;
 
-  @IsOptional()
-  @IsNumber()
-  porcentaje?: number;
 
-  @IsOptional()
+  @IsNotEmpty({ message: 'El margen es obligatorio.' })
   @IsNumber()
-  precio: number;
+  margen: number;
 
   createdAt?: Date;
 
+  /*esto no lo elimino pero ya no lo necesitamos (no quiero romper nada jajaja) -mili */
+  @IsOptional()
   @IsEnum(AlicuotaIva, {
     message:
       'tipo debe ser ALICUOTA_0  ALICUOTA_105, ALICUOTA_21, ALICUOTA_27,',
@@ -125,5 +126,9 @@ export class CreateProductoDto {
   @IsInt({ message: 'El usuarioCreatedId debe ser un número entero.' })
   usuarioCreatedId: number;
 
+  @ApiPropertyOptional({ type: () => CreatePresentacionDto })
+  @ValidateNested()
+  @Type(() => CreatePresentacionDto)
+  presentacion: CreatePresentacionDto;
 
 }

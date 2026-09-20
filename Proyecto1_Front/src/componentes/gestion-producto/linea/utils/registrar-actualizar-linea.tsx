@@ -21,6 +21,13 @@ import {
   TituloAlertaConfirmacion,
   useConfirmation,
 } from "../../../herramientas/alertas/alertas-confirmacion";
+import SelectSuperlinea from "../componentes/select-superlinea";
+import SuperlineasSelector from "../../producto/componentes/configuracion/superlineas-selector";
+import { SelectSuperlineaInterface } from "../../../../interfaces/gestion-producto/superlinea/interfaces-superlinea";
+import ProductoService from "../../producto/services/producto-service";
+import { useEnterFocus } from "../../../herramientas/formateo-de-campos/movimiento-campos";
+import SuperLineaService from "../../producto/services/superlinea-service";
+import RegistrarActualizarSuperLineaForm from "./registrar-actualizar-superlinea";
 
 export default function RegistrarActualizarLineaForm({
   linea,
@@ -48,6 +55,16 @@ export default function RegistrarActualizarLineaForm({
     setError,
   } = methods;
 
+  const [denominacionSuperlinea, setDenominacionSuperlinea] = useState(" ");
+  const [selectedSuperlinea, setSelectedSuperlinea] = React.useState<SelectSuperlineaInterface>();
+  const [superlineaSeleccionada, setSuperlineaSeleccionada] = useState<Linea>({} as Linea);
+
+  const [mostrarFormularioSuperlinea, setMostrarFormularioSuperlinea] = useState(false);
+  const [superlineas, setSuperlineas] = React.useState<SelectSuperlineaInterface[]>([]);
+  const selectSuperlineaRef = useRef<HTMLDivElement>(null);
+  const denominacionSuperlineaRef = useRef<HTMLInputElement>(null);
+
+  const enterToDenominacionSuperlinea = useEnterFocus(denominacionSuperlineaRef);
  
   const stockMinimo = watch("stockMinimo");
   const utilizaStockMinimo = watch("utilizaStockMinimo");
@@ -68,8 +85,9 @@ export default function RegistrarActualizarLineaForm({
         if (linea) {
           setValue("denominacion", linea.denominacion || "");
           setValue("observacion", linea.observacion || null);
-          setValue("stockMinimo", linea.stockMinimo || 0);
-          setValue("utilizaStockMinimo", linea.utilizaStockMinimo || false);
+         
+          setValue("superLineaId", linea.superlinea?.id || 0);
+          setSelectedSuperlinea(linea.superlinea);
           
         }
       } catch (error) {
@@ -77,7 +95,7 @@ export default function RegistrarActualizarLineaForm({
       }
     };
     fetchData();
-  }, []);
+  }, [linea, setValue]);
 
   const onSubmit = async (formData: FormValues) => {
     let response: ResponsePost;
@@ -98,7 +116,48 @@ export default function RegistrarActualizarLineaForm({
     }
   };
 
- 
+  const handleBuscarPorDenominacion = async (select: string) => {
+      try {
+        if (select === "SUPERLINEA") {
+          const superlineas = await ProductoService.obtenerTotales({ denominacion: denominacionSuperlinea }, "superlineas");
+          if (superlineas) {
+            console.log("Superlineas encontradas:", superlineas);
+            setSuperlineas(superlineas.data);
+          } else {
+            console.log("No se encontró una superlinea con la denominación ingresada.");
+          }
+        }
+
+        
+      } catch (error) {
+        console.error("Error al buscar por código:", error);
+      }
+    };
+  
+    const handleEnterEnSelect = async (e: React.KeyboardEvent<HTMLInputElement>, select: string) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+  
+        if (select === "SUPERLINEA") {
+          handleBuscarPorDenominacion("SUPERLINEA");
+        }
+        // Esperar un poco (opcional, si el botón hace una búsqueda antes)
+        setTimeout(() => {
+          let selectDiv: HTMLDivElement | null = null;
+          if (select === "SUPERLINEA") {
+            selectDiv = selectSuperlineaRef.current;
+          }
+    
+          if (selectDiv) {
+            const input = selectDiv.querySelector("input");
+            if (input) {
+              input.focus();
+              input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+            }
+          }
+        }, 300); // Ajustá este delay según el tiempo de búsqueda, si es necesario
+      }
+    };
 
   
 
@@ -137,7 +196,7 @@ export default function RegistrarActualizarLineaForm({
                   <FormInput name="observacion" label="Observación" placeholder="Ingresa una observación (opcional)" />
                 </div>
 
-                <div className="flex items-end gap-2 lg:col-span-1">
+ <div className="flex items-end gap-2 lg:col-span-1">
                   <label className="flex items-center pb-2">
                     <input
                       type="checkbox"
@@ -153,6 +212,32 @@ export default function RegistrarActualizarLineaForm({
                     disabled={utilizaStockMinimo ? false : true}
                   />
                 </div>
+               
+
+                <div className="lg:col-span-2 p-2">
+                  <SuperlineasSelector
+                    denominacionSuperlinea={denominacionSuperlinea}
+                    setDenominacionSuperlinea={setDenominacionSuperlinea}
+                    denominacionSuperlineaRef={denominacionSuperlineaRef}
+                    selectSuperlineaRef={selectSuperlineaRef}
+                    superlineas={superlineas}
+                    selectedSuperlinea={selectedSuperlinea}
+                    superLineaId={watch("superLineaId")}
+                 
+                    errors={errors}
+                    onEnterSuperlinea={(e) => handleEnterEnSelect(e, "SUPERLINEA")}
+                    onEnterDenominacion={enterToDenominacionSuperlinea}
+                    onSuperlineaChange={(superlinea) => {
+                      methods.setValue("superLineaId", superlinea?.id || 0);
+                      setSuperlineaSeleccionada(superlinea as any);
+                    }}
+                    onAgregarSuperlinea={() => setMostrarFormularioSuperlinea(true)}
+                  
+                  
+                  ></SuperlineasSelector>
+                
+                </div>
+
               </CardContent>
               {errors.root?.message && (
                 <div className="text-red-600 text-center mb-4">{String(errors.root.message)}</div>
@@ -170,6 +255,20 @@ export default function RegistrarActualizarLineaForm({
 
      
       <AlertasConfirmacion />
+
+      {mostrarFormularioSuperlinea && (
+        <RegistrarActualizarSuperLineaForm
+          onClose={() => setMostrarFormularioSuperlinea(false)}
+          onSuccess={async (mensaje) => {
+            setMostrarFormularioSuperlinea(false);
+
+            // Volver a cargar las superlíneas
+            await handleBuscarPorDenominacion("SUPERLINEA");
+
+            onSuccess(mensaje);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   Query,
   UsePipes,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 
 import { CreateProductoDto } from '../../dto/create-producto.dto';
@@ -31,6 +32,10 @@ import { NormalizeDenominacionSearchPipe } from 'src/modules/common/pipes/normal
 import { DenominacionBusquedaDto } from 'src/modules/common/dto/denominacion-busqueda.dto';
 import { SearchProductoRapidoDto } from '../../dto/search-producto-rapido.dto';
 import { ProductoService } from '../services/producto.service';
+import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
+import { ActualizarPreciosMasivosDto } from '../../dto/actualizar-precios-masivos.dto';
+import { SearchProductoBusquedaParcialDto } from '../../dto/search-producto-busqueda-parcial.dto';
+import { CalcularPrecioDto } from '../../dto/calcular-precio.dto';
 
 
 @ApiTags('Gestion Productos')
@@ -50,7 +55,18 @@ export class ProductoController {
     this.logger.log(`Creando un nuevo ${this.ENTITY_NAME}...`);
     return this.service.create(createDto);
   }
+
+  @Post('calcular-precio')
+  @Roles('Root', 'Administrador', 'Empleado')
+  calcularPrecio(@Body() dto: CalcularPrecioDto) {
+    return this.service.calcularPrecio(dto.costo, dto.margen);
+  }
   
+  @Post('denominacion-automatica')
+  async generarDenominacionAutomatica(@Body() dto: GenerarDenominacionDto){
+    return this.service.generarDenominacionAutomatica(dto);
+  }
+
   @Get('find-all-for-marcas/select')
   @Roles(
     'Root',
@@ -82,6 +98,38 @@ export class ProductoController {
     return this.service.findAllForLineas(denominacion);
   }
 
+  /*nuevo endpoint agregado -mili */
+  @Get('find-all-for-presentaciones/select')
+  @Roles(
+    'Root',
+    'Administrador',
+    'Empleado',
+    'Repartidor',
+    'Repositor',
+    'Vendedor',
+  )
+  @UsePipes(NormalizeDenominacionSearchPipe)
+  async findAllPresentacionesFor(@Query() dto: DenominacionBusquedaDto) {
+    const { denominacion = '' } = dto;
+    return this.service.findAllForPresentaciones(denominacion);
+  }
+
+  /*nuevo endpoint agregado -mili */
+  @Get('find-all-for-superlineas/select')
+  @Roles(
+    'Root',
+    'Administrador',
+    'Empleado',
+    'Repartidor',
+    'Repositor',
+    'Vendedor',
+  )
+  @UsePipes(NormalizeDenominacionSearchPipe)
+  async findAllSuperlineasFor(@Query() dto: DenominacionBusquedaDto) {
+    const { denominacion = '' } = dto;
+    return this.service.findAllForSuperlineas(denominacion);
+  }
+
   @Get('search-by-rapido')
   @Roles(
     'Root',
@@ -95,6 +143,20 @@ export class ProductoController {
   async searchRapido(@Query() dto: SearchProductoRapidoDto) {
     const { exacto, codigo, skip, take } = dto;
     return this.service.findByRapido(codigo, exacto, skip, take);
+  }
+
+
+  /*nuevo endpoint agregado -vicky */
+  @Get('search-by-partial')
+  //@Roles('Root', 'Administrador', 'Empleado')
+  findByBusquedaParcial(
+    @Query() busquedaDto: SearchProductoBusquedaParcialDto,
+  ) {
+    return this.service.findByBusquedaParcial(
+      busquedaDto.busqueda,
+      busquedaDto.skip,
+      busquedaDto.take
+    );
   }
 
   @Get('search-by')
@@ -115,6 +177,7 @@ export class ProductoController {
       codigoReferencia,
       marcaId,
       lineaId,
+      superlineaId, // CR-004: filtro por SuperLínea (CA-004.3)
       proveedorId,
       conStock,
       skip,
@@ -127,6 +190,7 @@ export class ProductoController {
       codigoReferencia,
       marcaId,
       lineaId,
+      superlineaId, // CR-004
       proveedorId,
       conStock,
       skip,
@@ -147,12 +211,24 @@ export class ProductoController {
     return this.service.buscarLineaDesdeProducto(id);
   }
 
+  @Get(':id/historial-precios')
+  @Roles('Root', 'Administrador', 'Empleado')
+  obtenerHistorialPrecios(@Param('id', ParseIntPipe) id: number) {
+    return this.service.obtenerHistorialPrecios(id);
+  }
+
   @Get(':id')
   @Roles('Root', 'Administrador', 'Empleado')
   @ApiOkResponse({ type: ProductoDto })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ProductoDto> {
     this.logger.log(`Buscando  ${this.ENTITY_NAME} con ID: ${id}`);
     return this.service.findDtoById(+id);
+  }
+
+  @Patch('precios/actualizacion-masiva')
+  @Roles('Root','Administrador')
+  actualizarPreciosMasivo(@Body() dto:ActualizarPreciosMasivosDto, @Query('usuarioId', ParseIntPipe) usuarioId:number,){
+    return this.service.actualizarPreciosMasivos(dto,usuarioId)
   }
 
   @Put(':id')
@@ -192,4 +268,10 @@ export class ProductoController {
     const data = await this.service.findByIdConAuditoria(id);
     return data;
   }
+
+  
+  
+
+
+
 }

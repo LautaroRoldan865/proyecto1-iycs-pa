@@ -15,6 +15,7 @@ import { FechaUtils } from 'src/modules/common/utils/date/fecha-utils';
 import { QueryBuilderHelper } from 'src/modules/common/query-builders/query-builder-helpers';
 import { BasePersistenceAdapter } from 'src/modules/common/persistence/base-persistence.adapter';
 import { handleDatabaseError } from 'src/modules/common/query-builders/database-error.helper';
+import{ SuperLinea } from '../../../superlinea/domain/entities/superlinea.entity';
 
 @Injectable()
 export class LineaPersistenceAdapter
@@ -36,21 +37,27 @@ export class LineaPersistenceAdapter
   }
 
   @Transactional()
-  async create(data: CreateLineaDto): Promise<Linea> {
+  async create(data: CreateLineaDto, superlinea:SuperLinea): Promise<Linea> {
     const repo = this.uow.getRepository(Linea);
 
     try {
       // Creamos la entidad sin sublíneas
       const nuevaEntity = repo.create({
         denominacion: data.denominacion,
+        observacion: data.observacion,
         utilizaStockMinimo: data.utilizaStockMinimo,
         stockMinimo: data.stockMinimo,
         usuarioCreatedId: data.usuarioCreatedId,
-        observacion: data.observacion,
+        superlineaId: data.superlineaId,
+
+        // Relación
+        superlinea: superlinea,
+    
       });
 
+      this.logger.debug('Entity creada:', nuevaEntity);
       const entityGuardada = await repo.save(nuevaEntity);
-
+      this.logger.log(`Entity guardada con ID: ${entityGuardada.id}`);
 
       return entityGuardada;
     } catch (error) {
@@ -81,6 +88,7 @@ export class LineaPersistenceAdapter
     entity.utilizaStockMinimo = data.utilizaStockMinimo;
     entity.stockMinimo = data.stockMinimo ?? 0;
     entity.usuarioCreatedId = data.usuarioCreatedId;
+    entity.superlineaId = data.superlineaId;
 
     // Guardar entidad antes de procesar sublíneas (opcional según lógica de negocio)
     const entityActualizada = await repo.save(entity);
@@ -92,6 +100,7 @@ export class LineaPersistenceAdapter
     try {
       const entity = await this.repository
         .createQueryBuilder('linea')
+        .leftJoinAndSelect('linea.superlinea', 'superlinea')
         .where('linea.id = :id', { id })
         .andWhere('linea.deletedAt IS NULL')
         .getOne();
@@ -128,6 +137,7 @@ export class LineaPersistenceAdapter
     try {
       const entity = await this.repository
         .createQueryBuilder('linea')
+        .leftJoinAndSelect('linea.superlinea', 'superlinea')
         .where('linea.denominacion = :denominacion', { denominacion })
         .andWhere('linea.deletedAt IS NULL')
         .getOne();
@@ -149,6 +159,7 @@ export class LineaPersistenceAdapter
 
       const entity = await this.repository
         .createQueryBuilder('linea')
+        .leftJoinAndSelect('linea.superlinea', 'superlinea')
         .withDeleted() //
         .where('UPPER(linea.denominacion) = :denominacion', {
           denominacion: normalizada,

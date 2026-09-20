@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -27,6 +28,16 @@ import { ProductoRelatedEntitiesValidator } from '../../infraestructure/validato
 import { ProductoUniquenessValidator } from '../../infraestructure/validators/producto-uniqueness.validator.ts';
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
+import { PresentacionService } from '../../../presentacion/application/services/presentacion.service';
+import { ActualizarPreciosMasivosDto, TipoAjustePrecio } from '../../dto/actualizar-precios-masivos.dto';
+import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
+import { DataSource } from 'typeorm';
+import { PrecioInvalidoException } from '../../domain/exceptions/precio-invalido.exception';
+import { ActualizarPreciosMasivosUseCase } from '../use-cases/actualizar-precios-masivos.use-case';
+import { GeneradorDenominacionService } from '../../domain/services/generador-denominacion.service';
+import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
+import { SuperlineaService } from 'src/modules/gestion-productos/superlinea/application/service/superlinea.service';
+import { ProductoCalculoHelper } from '../../domain/helpers/producto-calculos.helper';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -34,15 +45,18 @@ export class ProductoService {
     @Inject('IProductoRepository')
     private readonly repository: IProductoRepository,
     private readonly lineaService: LineaService,
+    private readonly presentacionService: PresentacionService,
 
     @Inject(forwardRef(() => MarcaService))
     private readonly marcaService: MarcaService,
     private readonly proveedorService: ProveedorService,
     private readonly usuarioService: UsuarioService,
+    private readonly superlineaService: SuperlineaService,
 
     //  Domain Services
     private readonly intrinsicValidationService: ProductoIntrinsicValidationService,
     private readonly validationService: ProductoValidationService,
+    private readonly generadorDenominacionService: GeneradorDenominacionService,
 
     // Infrastructure Validators
     private readonly relatedEntitiesValidator: ProductoRelatedEntitiesValidator,
@@ -51,6 +65,9 @@ export class ProductoService {
 
     private readonly productoDeletePolicy: ProductoDeletePolicy,
 
+    @Inject('UnitOfWork') private readonly uow: IUnitOfWork,
+
+    private readonly actualizarPreciosMasivosUseCase: ActualizarPreciosMasivosUseCase,
   ) { }
 
   private readonly ENTITY_NAME = 'Producto';
@@ -61,7 +78,7 @@ export class ProductoService {
     );
 
     // Orquestar todas las validaciones
-    const { marca, linea, usuario } =
+    const { marca, linea, usuario, presentacion } =
       await this.validarYPrepararCreacion(dto);
 
 
@@ -70,7 +87,7 @@ export class ProductoService {
       dto,
       linea,
       marca,
-
+      presentacion,
       usuario,
     );
 
@@ -82,17 +99,87 @@ export class ProductoService {
   }
 
   async update(id: number, dto: UpdateProductoDto) {
-    this.logger.log(`Actualizandox  ${this.ENTITY_NAME} con ID: ${id}`);
+    this.logger.log(`Actualizando ${this.ENTITY_NAME} con ID: ${id}`);
 
-    const { marca, linea, usuario } =
-      await this.validarYPrepararActualizacion(id, dto);
+    const productoActual = await this.repository.findOne(id);
+
+    if (!productoActual) {
+      throw new NotFoundException(
+        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
+      );
+    }
+
+    if (
+      productoActual.lineaId == null ||
+      productoActual.marcaId == null ||
+      productoActual.presentacionId == null
+    ) {
+      throw new InternalServerErrorException(
+        'Producto en estado inválido',
+      );
+    }
+
+    const marcaId = dto.marcaId ?? productoActual.marcaId;
+    const lineaId = dto.lineaId ?? productoActual.lineaId;
+    const presentacionId =
+      dto.presentacionId ?? productoActual.presentacionId;
+
+    const denominacion =
+      dto.denominacion ?? productoActual.denominacion;
+
+    const alicuotaIva =
+      dto.alicuotaIva ?? productoActual.alicuotaIva;
+
+    // Validaciones intrínsecas
+    this.intrinsicValidationService.validarDatosBasicos({
+      denominacion,
+      marcaId,
+      lineaId,
+      presentacionId,
+      alicuotaIva,
+    });
+
+    // Validar entidades relacionadas
+    const { marca, linea, presentacion } =
+      await this.relatedEntitiesValidator
+        .validarYObtenerEntidadesRelacionadas(
+          marcaId,
+          lineaId,
+          presentacionId,
+        );
+
+    // Reglas de negocio
+    this.validationService.validarEntidadesRelacionadas(
+      marca,
+      linea,
+      presentacion,
+    );
+
+    if (dto.denominacion) {
+      await this.uniquenessValidator.validarDenominacionUnica(
+        dto.denominacion,
+        id,
+      );
+    }
+
+    // Usuario
+    if (dto.usuarioUpdatedId === undefined) {
+      throw new InternalServerErrorException(
+        'El usuarioUpdatedId es obligatorio.',
+      );
+    }
+
+    const usuario =
+      await this.usuarioValidator.validarUsuarioExiste(
+        dto.usuarioUpdatedId,
+      );
 
     const entity = await this.repository.update(
       id,
       dto,
       linea,
       marca,
-
+      presentacion,
       usuario,
     );
 
@@ -124,6 +211,19 @@ export class ProductoService {
     };
   }
 
+  async findByBusquedaParcial(busqueda: string,skip: number,take: number): Promise<{ data: GetProductoDto[]; total: number }> {
+    this.logger.warn(`service`);
+    const result = await this.repository.findByBusquedaParcial(busqueda,skip,take);
+    console.log("Productos buscados:", result)
+    return {
+      data: result.data.map((producto) => {
+        return ProductoMapper.toBusquedaDto(producto);
+      }),
+      total: PaginacionUtils.totalItems(result.total),
+    };
+  }
+
+
 
   async findBy(
     denominacion: string,
@@ -132,6 +232,7 @@ export class ProductoService {
     codigoReferencia: string,
     marca_id: number,
     linea_id: number,
+    superlinea_id: number | undefined, // CR-004: filtro por SuperLínea (CA-004.3)
     proveedor_id: number,
     conStock: boolean,
     skip: number,
@@ -145,6 +246,7 @@ export class ProductoService {
       codigoReferencia,
       marca_id,
       linea_id,
+      superlinea_id, // CR-004
       proveedor_id,
       conStock,
       skip,
@@ -225,8 +327,16 @@ export class ProductoService {
     return this.lineaService.findAllFor(denominacion);
   }
 
+  async findAllForSuperlineas(denominacion: string) {
+    return this.superlineaService.findAllFor(denominacion);
+  }
+
   async findAllForMarcas(denominacion: string) {
     return this.marcaService.findAllFor(denominacion);
+  }
+
+  async findAllForPresentaciones(denominacion: string){
+    return this.presentacionService.findAllFor(denominacion);
   }
 
   async findByDenominacionCodigoProveedorFiltered(
@@ -320,6 +430,7 @@ export class ProductoService {
       marcaId: dto.marcaId,
       lineaId: dto.lineaId,
       alicuotaIva: dto.alicuotaIva,
+      presentacionId: dto.presentacionId,
     });
 
     // Validar unicidad (Infrastructure - DB)
@@ -332,10 +443,11 @@ export class ProductoService {
       );
     }
     // 3 Validar entidades relacionadas existen (Infrastructure - DB)
-    const { marca, linea, } =
+    const { marca, linea, presentacion} =
       await this.relatedEntitiesValidator.validarYObtenerEntidadesRelacionadas(
         dto.marcaId,
         dto.lineaId,
+        dto.presentacionId,
 
       );
 
@@ -343,16 +455,18 @@ export class ProductoService {
     this.validationService.validarEntidadesRelacionadas(
       marca,
       linea,
-
+      presentacion
     );
 
+
+  
 
     //  Validar usuario existe (Infrastructure)
     const usuario = await this.usuarioValidator.validarUsuarioExiste(
       dto.usuarioCreatedId,
     );
 
-    return { marca, linea, usuario };
+    return { marca, linea, usuario, presentacion };
   }
   /**
    * Orquesta todas las validaciones necesarias para actualizar un producto
@@ -371,18 +485,41 @@ export class ProductoService {
 
     if (
       productoActual.lineaId == null ||
-      productoActual.marcaId == null
+      productoActual.marcaId == null || productoActual.presentacionId === null
     ) {
       throw new InternalServerErrorException('Producto en estado inválido');
+    }
+
+    const marcaId = dto.marcaId ?? productoActual.marcaId;
+    const lineaId = dto.lineaId ?? productoActual.lineaId;
+    const presentacionId =
+      dto.presentacionId ?? productoActual.presentacionId;
+
+    if (marcaId === undefined) {
+      throw new InternalServerErrorException(
+        'El marcaId es obligatorio.',
+      );
+    }
+
+    if (lineaId === undefined) {
+      throw new InternalServerErrorException(
+        'El lineaId es obligatorio.',
+      );
+    }
+
+    if (presentacionId === undefined) {
+      throw new InternalServerErrorException(
+        'El presentacionId es obligatorio.',
+      );
     }
 
     //  Validar datos intrínsecos
     this.intrinsicValidationService.validarDatosBasicos({
       denominacion: dto.denominacion ?? productoActual.denominacion,
-      marcaId: dto.marcaId ?? productoActual.marcaId,
-      lineaId: dto.lineaId ?? productoActual.lineaId,
+      marcaId,
+      lineaId,
+      presentacionId,
       alicuotaIva: dto.alicuotaIva ?? productoActual.alicuotaIva,
-
     });
 
     // Validar unicidad (excluyendo el ID actual)
@@ -394,10 +531,11 @@ export class ProductoService {
     }
 
     // Validar entidades relacionadas
-    const { marca, linea, } =
+    const { marca, linea, presentacion, } =
       await this.relatedEntitiesValidator.validarYObtenerEntidadesRelacionadas(
         dto.marcaId ?? productoActual.marcaId,
         dto.lineaId ?? productoActual.lineaId,
+        presentacionId,
 
       );
 
@@ -405,16 +543,47 @@ export class ProductoService {
     this.validationService.validarEntidadesRelacionadas(
       marca,
       linea,
-
+      presentacion,
     );
+
+    if (dto.usuarioUpdatedId === undefined) {
+      throw new InternalServerErrorException(
+        'El usuarioUpdatedId es obligatorio.',
+      );
+    }
 
     // 5 Validar usuario
     const usuario = await this.usuarioValidator.validarUsuarioExiste(
       dto.usuarioUpdatedId,
     );
 
-    return { marca, linea, usuario };
+    return { marca, linea, presentacion, usuario };
   }
 
+  async actualizarPreciosMasivos( dto:ActualizarPreciosMasivosDto, usuarioId?:number){
+    return this.actualizarPreciosMasivosUseCase.ejecutar(dto,usuarioId); 
+  }
 
+  async generarDenominacionAutomatica(dto: GenerarDenominacionDto){
+    const marca = await this.marcaService.findEntityById(dto.marcaId);
+    const linea = await this.lineaService.findEntityById(dto.lineaId);
+    const presentacion = await this.presentacionService.findEntityById(dto.presentacionId);
+    //busca presentación, si no existe la crea
+   // const presentacion = await this.presentacionService.ejecutar(dto.presentacion);
+
+    return this.generadorDenominacionService.generar(marca, linea, presentacion);
+
+  }
+
+  async obtenerHistorialPrecios(productoId:number):Promise<HistorialPrecio[]>{
+    return this.repository.findHistorialPreciobyProductoId(productoId)
+  }
+
+  calcularPrecio(costo: number, margen: number) {
+    const precio = ProductoCalculoHelper.calcularPrecio(costo, margen);
+
+    return {
+      precio,
+    };
+  }
 }

@@ -6,6 +6,9 @@ import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { UpdatePrecioDto } from '../../dto/update-precio.dto';
+import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
+import { HistorialPrecio } from '../entities/historial-precio.entity';
+
 
 export interface IProductoRepository {
 
@@ -13,6 +16,7 @@ export interface IProductoRepository {
     data: CreateProductoDto,
     linea: Linea,
     marca: Marca,
+    presentacion:Presentacion,
     usuario: Usuario,
   ): Promise<Producto>;
 
@@ -27,6 +31,7 @@ export interface IProductoRepository {
     codigoReferencia: string,
     marca_id: number,
     linea_id: number,
+    superlinea_id: number | undefined, // CR-004
     proveedor_id: number,
     conStock: boolean,
     skip: number,
@@ -40,6 +45,7 @@ export interface IProductoRepository {
     take: number,
   ): Promise<{ data: Producto[]; total: number }>;
 
+  findByBusquedaParcial(busqueda:string, skip:number, take:number):Promise<{ data: Producto[]; total: number }>;
 
   findByIdWithoutRelations(id: number): Promise<Producto | null> | undefined;
 
@@ -48,6 +54,7 @@ export interface IProductoRepository {
     data: UpdateProductoDto,
     linea: Linea,
     marca: Marca,
+    presentacion:Presentacion,
     usuario: Usuario,
   ): Promise<Producto>;
 
@@ -77,7 +84,12 @@ export interface IProductoRepository {
   ): Promise<boolean>;
   existsByCodigoProveedor(codigoProveedor: string, excludeId: number): Promise<boolean>;
   existsProductosActivosByMarca(marcaId: number): Promise<boolean>;
+  existsProductosActivosByPresentacion(presentacionId: number): Promise<boolean>;
   existsProductosActivosByLinea(lineaId: number): Promise<boolean>;
 
   findByIds(ids: number[]): Promise<Producto[]>;
+
+  findParaActualizacionPrecios(lineaId?:number): Promise<Producto[]>
+  guardarLoteConHistorial(producto:Producto[], historiales: HistorialPrecio[], uow?: IUnitOfWork):Promise<void>
+  findHistorialPreciobyProductoId(productoId:number):Promise<HistorialPrecio[]>
 }

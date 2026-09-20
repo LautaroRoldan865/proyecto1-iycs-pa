@@ -8,25 +8,14 @@ export interface Producto {
   //
   id: number;
   denominacion: string;
-  codigoProveedor?: string | null;
-  codigoReferencia?: string | null;
-  codigoBarra?: string | null;
+  
   stock?: number | null;
-  alicuotaIva?: number | null;
-  //ubicacion?: string | null;
+
+ 
   costo?: number | null;
   precio?: number | null;
-  porcentaje?: number | null;
-  //fechaCosto?: string | null;
- /*  costoEnDolar: boolean;
-  costoDolar?: number | null;
-  cotizacionDolar?: number | null;
-  fechaCostoDolar?: string | null;
-  precioConIva?: number | null;
-  fechaPrecio?: string | null;
-  fechaPrecioOferta?: string | null;
-  destacado?: boolean | null;
-  envioGratis?: boolean | null; */
+  margen?: number | null;
+ 
   observacion: string | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -36,64 +25,42 @@ export interface Producto {
   usuarioUpdatedId: number;
   linea: SelectLinea;
   marca: SelectMarca;
-  /* itemsAlternativo?: ItemProdAlternativo[] | null;
-  poseeAlternativos: boolean;
-  esAlternativo: boolean; */
-  sistema: number;
-  /* sublinea: SelectSublinea;
-  precioOcasionalConIva: number;
-  precioMayoristaConIva: number;
-  precioClienteConIva: number;
-  precioOfertaConIva: number;
   presentacion: SelectPresentacion;
-  itemsProveedor?: ItemProveedor[] | null;
- */
+  sistema: number;
+
   stockMinimo: number;
-  cantidadPorPack: number;
+
   utilizaStockMinimo: boolean;
-  utilizaPack: boolean;
- // oferta: boolean;
- // cantidadOferta: number;
- /*  porcentajeOcasional: number;
-  porcentajeMayorista: number;
-  porcentajeCliente: number;
-  porcentajeOferta: number;
-  cantidadOferta: number;
-  precioOcasional: number;
-  precioMayorista: number;
-  precioCliente: number;
-  precioOferta: number; */
 }
 
 export interface ConsultarProducto {
   id: number;
   denominacion: string;
-  codigoProveedor: string;
-  codigoReferencia: string;
+  
   stock: number;
   precio: number;
-  precioOferta: number;
+  /*precioOferta: number;
   ubicacion?: string | null;
   poseeAlternativos: boolean;
-  esAlternativo: boolean;
+  esAlternativo: boolean;*/
   sistema: number;
-  precioConIva: number;
-  observacion: string;
-  proveedor: string;
+  /*precioConIva: number;
+  */observacion: string;
+  /*proveedor: string;
   precioOcasionalConIva: number;
   precioMayoristaConIva: number;
   precioClienteConIva: number;
-  precioOfertaConIva: number;
+  precioOfertaConIva: number;*/
 }
 
 
 export interface ConsultarProductosCambioPreciosMasivo {
   id: number;
   denominacion: string;
-  codigoProveedor: string;
+  //codigoProveedor: string;
   observacion: string;
 
-  precioOcasionalConIva: number;
+ /* precioOcasionalConIva: number;
   precioOcasionalConIvaNuevo: number;
   precioMayoristaConIva: number;
   precioMayoristaConIvaNuevo: number;
@@ -102,7 +69,7 @@ export interface ConsultarProductosCambioPreciosMasivo {
   precioOfertaConIva: number;
   precioOfertaConIvaNuevo: number;
 
-  dirty: boolean;
+  dirty: boolean;*/
 
 }
 

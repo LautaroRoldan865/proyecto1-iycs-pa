@@ -65,4 +65,11 @@ export class SearchProductoPaginationWithDto {
   @IsBoolean()
   conStock: boolean;
 
+  // CR-004: Filtro por SuperLínea (CA-004.3)
+  // Activo cuando CR-003 integre la entidad Superlinea y la FK en la tabla linea
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  superlineaId?: number;
+
 }

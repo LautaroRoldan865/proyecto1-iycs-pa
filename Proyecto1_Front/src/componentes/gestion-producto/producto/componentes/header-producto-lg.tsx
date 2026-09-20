@@ -1,33 +1,36 @@
-import { Package, PlusCircle, Search } from "lucide-react";
+import { Package, PlusCircle, Search, X, History, TrendingUp } from "lucide-react";
 import { Button } from "../../../ui/Button";
 import { CardHeader, CardTitle } from "../../../ui/Card";
 import { Input } from "../../../ui/Input";
 import { EstadisticasSimples } from "../../../herramientas/reutilizables/estadisticas-simples";
 import { ImpresionForm } from "../../../herramientas/reutilizables/impresion-form";
-import { puedeAgregarProducto } from "../domain/permisos-producto";
+import {
+  puedeActualizarPreciosMasivo,
+  puedeAgregarProducto,
+  puedeVerHistorialPrecios,
+} from "../domain/permisos-producto";
+import { BotonNavegacion } from "./boton-navegacion";
 
 interface Props {
-  codigo: string;
-  exacto: boolean;
+  busqueda: string;
   roles:number[];
-  onChangeCodigo: (value: string) => void;
-  onChangeExacto: (value: boolean) => void;
-  onBuscarRapido: () => void;
+  onChangeBusqueda: (value: string) => void;
+  onBuscarParcial: () => void;
   onNuevo: () => void;
   total: number;
   mostrados: number;
   paginaActual: number;
   onImprimirTodo: () => void;
   onImprimirPagina: () => void;
+  onLimpiarBusqueda: () => void;
 }
 
 export function ProductosHeaderLg({
-  codigo,
-  exacto,
+  busqueda,
   roles,
-  onChangeCodigo,
-  onChangeExacto,
-  onBuscarRapido,
+  onChangeBusqueda,
+  onBuscarParcial,
+  onLimpiarBusqueda, 
   onNuevo,
   total,
   mostrados,
@@ -37,42 +40,77 @@ export function ProductosHeaderLg({
 }: Props) {
   return (
     <CardHeader className="flex flex-col md:flex-row gap-4 p-4">
-      <div className="flex flex-col md:flex-row flex-wrap gap-4 w-full">
-        <CardTitle className="flex items-center gap-2">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full">
+        <CardTitle className="flex items-center gap-2 shrink-0">
           <Package className="consultar-icon" />
           <span>Productos</span>
         </CardTitle>
 
-        {/* Buscador rápido */}
-        <div className="flex items-center gap-2">
-          <div className="relative max-w-xs w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              value={codigo}
-              placeholder="Código..."
-              className="text-black pl-10"
-              onChange={(e) => onChangeCodigo(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && onBuscarRapido()}
-            />
+        {/* Buscador productos parcial*/}
+        <div className="flex flex-col gap-1 flex-1 max-w-xl">
+          <div className="relative flex items-center w-full">
+              <Search className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none"/>
+                <Input 
+                  value={busqueda} 
+                  placeholder="Buscar producto" 
+                  className="h-11 w-full pl-10 pr-24 text-black bg-white border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" 
+                  onChange={(e) => onChangeBusqueda(e.target.value)} 
+                  onKeyDown={(e) => { 
+                    if (e.key === "Enter" && busqueda.trim().length >= 2) { 
+                      onBuscarParcial(); 
+                    } 
+                  }} 
+                /> 
+
+               
+              {/* Limpiar */}
+              {busqueda && ( 
+                <button
+                  type="button"
+                  onClick={onLimpiarBusqueda}
+                  className="absolute right-12 top-1/2 -translate-y-1/2 p-1 rounded-md bg-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  title="Limpiar búsqueda"
+                >
+                  <X className="w-4 h-4" />   {/* <-- era <Search /> */}
+                </button>
+              )}
+
+                {/* Buscar */}
+                <button
+                  type="button"
+                  disabled={busqueda.trim().length < 2}
+                  onClick={onBuscarParcial}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 p-0 flex items-center justify-center rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                  title="Buscar producto"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              </div>
+
+          {/* Ayuda */}
+          {busqueda.length > 0 && busqueda.trim().length < 2 && (
+            <span className="text-xs text-gray-500 ml-1">
+              *Ingresá al menos 2 caracteres para buscar
+            </span>
+          )}
           </div>
-        </div>
-
-      <div className="flex items-center gap-2">
-
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={exacto}
-              onChange={(e) => onChangeExacto(e.target.checked)}
-            />
-            Exacto
-          </label>
-        </div>
-
       </div>
-      {puedeAgregarProducto(roles) && (<Button className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1.5 px-3 py-2 rounded-lg shadow-sm"
-        onClick={onNuevo}><PlusCircle className="h-4 w-4" /></Button>)}
-      
+      <div className="flex gap-2">
+        {puedeVerHistorialPrecios(roles) && (
+          <BotonNavegacion ruta="/admin/historial-precios" texto="Historial de precios" icono={History} soloIcono />
+        )}
+        {puedeActualizarPreciosMasivo(roles) && (
+          <BotonNavegacion
+            ruta="/admin/actualizacion-masiva"
+            texto="Actualización masiva"
+            icono={TrendingUp}
+            soloIcono
+          />
+        )}
+        {puedeAgregarProducto(roles) && (<Button className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1.5 px-3 py-2 rounded-lg shadow-sm"
+          onClick={onNuevo}><PlusCircle className="h-4 w-4" /></Button>)}
+      </div>
+
       {/* Botón de agregar e impresion por el momento no lo mostramos en el celu */}
       {/* <div className="flex items-center justify-between gap-3">
         <Button
