@@ -34,6 +34,7 @@ import { SearchProductoRapidoDto } from '../../dto/search-producto-rapido.dto';
 import { ProductoService } from '../services/producto.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 import { ActualizarPreciosMasivosDto } from '../../dto/actualizar-precios-masivos.dto';
+import { CalcularPrecioDto } from '../../dto/calcular-precio.dto';
 
 
 @ApiTags('Gestion Productos')
@@ -52,6 +53,12 @@ export class ProductoController {
   create(@Body() createDto: CreateProductoDto) {
     this.logger.log(`Creando un nuevo ${this.ENTITY_NAME}...`);
     return this.service.create(createDto);
+  }
+
+  @Post('calcular-precio')
+  @Roles('Root', 'Administrador', 'Empleado')
+  calcularPrecio(@Body() dto: CalcularPrecioDto) {
+    return this.service.calcularPrecio(dto.costo, dto.margen);
   }
   
   @Post('denominacion-automatica')
@@ -246,7 +253,7 @@ export class ProductoController {
   }
 
   
-
+  
 
 
 

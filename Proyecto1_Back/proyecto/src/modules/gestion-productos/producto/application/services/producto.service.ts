@@ -37,6 +37,7 @@ import { ActualizarPreciosMasivosUseCase } from '../use-cases/actualizar-precios
 import { GeneradorDenominacionService } from '../../domain/services/generador-denominacion.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 import { SuperlineaService } from 'src/modules/gestion-productos/superlinea/application/service/superlinea.service';
+import { ProductoCalculoHelper } from '../../domain/helpers/producto-calculos.helper';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -561,5 +562,13 @@ export class ProductoService {
 
   async obtenerHistorialPrecios(productoId:number):Promise<HistorialPrecio[]>{
     return this.repository.findHistorialPreciobyProductoId(productoId)
+  }
+
+  calcularPrecio(costo: number, margen: number) {
+    const precio = ProductoCalculoHelper.calcularPrecio(costo, margen);
+
+    return {
+      precio,
+    };
   }
 }
