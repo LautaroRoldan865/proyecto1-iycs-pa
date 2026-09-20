@@ -11,6 +11,7 @@ import {
   Query,
   UsePipes,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 
 import { CreateProductoDto } from '../../dto/create-producto.dto';
@@ -32,6 +33,7 @@ import { DenominacionBusquedaDto } from 'src/modules/common/dto/denominacion-bus
 import { SearchProductoRapidoDto } from '../../dto/search-producto-rapido.dto';
 import { ProductoService } from '../services/producto.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
+import { ActualizarPreciosMasivosDto } from '../../dto/actualizar-precios-masivos.dto';
 
 
 @ApiTags('Gestion Productos')
@@ -187,12 +189,24 @@ export class ProductoController {
     return this.service.buscarLineaDesdeProducto(id);
   }
 
+  @Get(':id/historial-precios')
+  @Roles('Root', 'Administrador', 'Empleado')
+  obtenerHistorialPrecios(@Param('id', ParseIntPipe) id: number) {
+    return this.service.obtenerHistorialPrecios(id);
+  }
+
   @Get(':id')
   @Roles('Root', 'Administrador', 'Empleado')
   @ApiOkResponse({ type: ProductoDto })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ProductoDto> {
     this.logger.log(`Buscando  ${this.ENTITY_NAME} con ID: ${id}`);
     return this.service.findDtoById(+id);
+  }
+
+  @Patch('precios/actualizacion-masiva')
+  @Roles('Root','Administrador')
+  actualizarPreciosMasivo(@Body() dto:ActualizarPreciosMasivosDto, @Query('usuarioId', ParseIntPipe) usuarioId:number,){
+    return this.service.actualizarPreciosMasivos(dto,usuarioId)
   }
 
   @Put(':id')
@@ -232,6 +246,10 @@ export class ProductoController {
     const data = await this.service.findByIdConAuditoria(id);
     return data;
   }
+
+  
+
+
 
 
 }

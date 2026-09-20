@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -28,6 +29,11 @@ import { ProductoUniquenessValidator } from '../../infraestructure/validators/pr
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
 import { PresentacionService } from '../../../presentacion/application/services/presentacion.service';
+import { ActualizarPreciosMasivosDto, TipoAjustePrecio } from '../../dto/actualizar-precios-masivos.dto';
+import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
+import { DataSource } from 'typeorm';
+import { PrecioInvalidoException } from '../../domain/exceptions/precio-invalido.exception';
+import { ActualizarPreciosMasivosUseCase } from '../use-cases/actualizar-precios-masivos.use-case';
 import { GeneradorDenominacionService } from '../../domain/services/generador-denominacion.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 import { SuperlineaService } from 'src/modules/gestion-productos/superlinea/application/service/superlinea.service';
@@ -58,6 +64,9 @@ export class ProductoService {
 
     private readonly productoDeletePolicy: ProductoDeletePolicy,
 
+    @Inject('UnitOfWork') private readonly uow: IUnitOfWork,
+
+    private readonly actualizarPreciosMasivosUseCase: ActualizarPreciosMasivosUseCase,
   ) { }
 
   private readonly ENTITY_NAME = 'Producto';
@@ -537,6 +546,9 @@ export class ProductoService {
     return { marca, linea, presentacion, usuario };
   }
 
+  async actualizarPreciosMasivos( dto:ActualizarPreciosMasivosDto, usuarioId?:number){
+    return this.actualizarPreciosMasivosUseCase.ejecutar(dto,usuarioId); 
+  }
 
   async generarDenominacionAutomatica(dto: GenerarDenominacionDto){
     const marca = await this.marcaService.findEntityById(dto.marcaId);
@@ -549,4 +561,7 @@ export class ProductoService {
 
   }
 
+  async obtenerHistorialPrecios(productoId:number):Promise<HistorialPrecio[]>{
+    return this.repository.findHistorialPreciobyProdcutoId(productoId)
+  }
 }

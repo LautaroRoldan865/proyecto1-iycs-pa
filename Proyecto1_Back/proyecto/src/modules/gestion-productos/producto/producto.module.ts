@@ -23,12 +23,15 @@ import { PresentacionService } from '../presentacion/application/services/presen
 import { PresentacionRepository } from '../presentacion/infraestructure/repositories/presentacion.repository';
 import { GeneradorDenominacionService } from './domain/services/generador-denominacion.service';
 import { PresentacionModule } from '../presentacion/presentacion.module';
+import { Presentacion } from '../presentacion/domain/entities/presentacion.entity';
+import { HistorialPrecio } from './domain/entities/historial-precio.entity';
+import { ActualizarPreciosMasivosUseCase } from './application/use-cases/actualizar-precios-masivos.use-case';
 import { SuperlineaModule } from '../superlinea/superlinea.module';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Producto]),
+    TypeOrmModule.forFeature([Producto, Presentacion, HistorialPrecio]),
     CommonModule,
     forwardRef(() => LineaModule),
     forwardRef(()=>SuperlineaModule),
@@ -61,7 +64,7 @@ import { SuperlineaModule } from '../superlinea/superlinea.module';
     },
     NormalizeDenominacionPipe,
     ProductoPersistenceAdapter,
-    
+    ActualizarPreciosMasivosUseCase
   ],
   
   exports: [
