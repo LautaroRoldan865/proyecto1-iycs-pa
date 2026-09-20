@@ -65,7 +65,7 @@ export function DatosCard({
         </div>
       </div>
 
-      
+      {/*
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div>
           <p className="text-xs text-gray-500">Precio Ocasional</p>
@@ -92,6 +92,7 @@ export function DatosCard({
           </p>
         </div>
       </div>
+         */ }
 
       {/* Observación */}
       {producto.observacion && (
