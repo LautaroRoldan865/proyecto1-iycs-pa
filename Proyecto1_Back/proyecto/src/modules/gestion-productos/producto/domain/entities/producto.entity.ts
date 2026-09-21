@@ -7,6 +7,7 @@ import {
   ManyToOne,
   Index,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
@@ -19,6 +20,10 @@ import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.de
 import { PorcentajeColumn } from 'src/modules/common/decorators/porcentaje-column.decorator';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
 import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
+import { HistorialPrecio } from './historial-precio.entity';
+import { PrecioInvalidoException } from '../exceptions/precio-invalido.exception';
+import { ProductoCalculoHelper } from '../helpers/producto-calculos.helper';
+import { redondearProducto } from 'src/modules/common/utils/number/redondeo';
 
 
 @Entity('producto')
@@ -181,4 +186,28 @@ export class Producto {
 
   @Column({ type: 'int', nullable: true })
   presentacionId?: number;
+
+  @OneToMany(()=> HistorialPrecio, (histPrecio)=> histPrecio.producto)
+  historialPrecios: HistorialPrecio[]
+
+  get precio(){
+    return ProductoCalculoHelper.calcularPrecio(this.costo,this.margen)
+  }
+
+  actualizarPrecioconHistorial(nuevoPrecio:number, motivo: string, usuarioId?: number){
+    if(nuevoPrecio <= 0){
+      throw new PrecioInvalidoException(this.id, this.denominacion, this.precio, nuevoPrecio)
+    }
+
+    const precioAnterior = this.precio
+    this.costo = ProductoCalculoHelper.calcularNuevoCosto(nuevoPrecio,this.margen)
+    this.fechaCosto = new Date()
+
+    const historial = new HistorialPrecio(precioAnterior,nuevoPrecio,motivo,this,usuarioId)
+
+    this.usuarioUpdated = {id: usuarioId} as Usuario
+    this.updatedAt = new Date()
+
+    return historial
+  }
 }

@@ -30,3 +30,9 @@ export const redondear = (valor: number, decimales =2): number => {
   const factor = 10 ** decimales; // Más idiomático que Math.pow
   return Math.round((valor + Number.EPSILON) * factor) / factor;
 };
+
+
+export const redondearProducto = (valor: number, decimales =2): number => {
+  const factor = 10 ** decimales; 
+  return Math.round((valor + Number.EPSILON) * factor) / factor;
+};

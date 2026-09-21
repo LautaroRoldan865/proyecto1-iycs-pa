@@ -44,7 +44,7 @@ import { PresentacionModule } from './modules/gestion-productos/presentacion/pre
       database: process.env.DB_DATABASE,
       timezone: '-03:00',
 
-      //  Auto-carga de entidades desde los módulos
+      // Auto-carga de entidades desde los módulos
       // Las entidades se registran automáticamente cuando usás
       // TypeOrmModule.forFeature([Entidad]) en tus módulos
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
@@ -53,9 +53,9 @@ import { PresentacionModule } from './modules/gestion-productos/presentacion/pre
       synchronize: false,  
       //descomentar ssl: process.env.DB_SSL === 'true' | comentar para probarlo en local -mili
       //ssl: process.env.DB_SSL === 'true',
-      //ssl: {
-      //  rejectUnauthorized: true,
-      //},
+      ssl: {
+        rejectUnauthorized: true,
+      },
     }),
 
     MarcaModule,

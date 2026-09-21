@@ -11,6 +11,7 @@ import {
   Query,
   UsePipes,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 
 import { CreateProductoDto } from '../../dto/create-producto.dto';
@@ -32,6 +33,9 @@ import { DenominacionBusquedaDto } from 'src/modules/common/dto/denominacion-bus
 import { SearchProductoRapidoDto } from '../../dto/search-producto-rapido.dto';
 import { ProductoService } from '../services/producto.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
+import { ActualizarPreciosMasivosDto } from '../../dto/actualizar-precios-masivos.dto';
+import { SearchProductoBusquedaParcialDto } from '../../dto/search-producto-busqueda-parcial.dto';
+import { CalcularPrecioDto } from '../../dto/calcular-precio.dto';
 
 
 @ApiTags('Gestion Productos')
@@ -50,6 +54,12 @@ export class ProductoController {
   create(@Body() createDto: CreateProductoDto) {
     this.logger.log(`Creando un nuevo ${this.ENTITY_NAME}...`);
     return this.service.create(createDto);
+  }
+
+  @Post('calcular-precio')
+  @Roles('Root', 'Administrador', 'Empleado')
+  calcularPrecio(@Body() dto: CalcularPrecioDto) {
+    return this.service.calcularPrecio(dto.costo, dto.margen);
   }
   
   @Post('denominacion-automatica')
@@ -135,6 +145,20 @@ export class ProductoController {
     return this.service.findByRapido(codigo, exacto, skip, take);
   }
 
+
+  /*nuevo endpoint agregado -vicky */
+  @Get('search-by-partial')
+  //@Roles('Root', 'Administrador', 'Empleado')
+  findByBusquedaParcial(
+    @Query() busquedaDto: SearchProductoBusquedaParcialDto,
+  ) {
+    return this.service.findByBusquedaParcial(
+      busquedaDto.busqueda,
+      busquedaDto.skip,
+      busquedaDto.take
+    );
+  }
+
   @Get('search-by')
   @Roles(
     'Root',
@@ -153,6 +177,7 @@ export class ProductoController {
       codigoReferencia,
       marcaId,
       lineaId,
+      superlineaId, // CR-004: filtro por SuperLínea (CA-004.3)
       proveedorId,
       conStock,
       skip,
@@ -165,6 +190,7 @@ export class ProductoController {
       codigoReferencia,
       marcaId,
       lineaId,
+      superlineaId, // CR-004
       proveedorId,
       conStock,
       skip,
@@ -185,12 +211,24 @@ export class ProductoController {
     return this.service.buscarLineaDesdeProducto(id);
   }
 
+  @Get(':id/historial-precios')
+  @Roles('Root', 'Administrador', 'Empleado')
+  obtenerHistorialPrecios(@Param('id', ParseIntPipe) id: number) {
+    return this.service.obtenerHistorialPrecios(id);
+  }
+
   @Get(':id')
   @Roles('Root', 'Administrador', 'Empleado')
   @ApiOkResponse({ type: ProductoDto })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ProductoDto> {
     this.logger.log(`Buscando  ${this.ENTITY_NAME} con ID: ${id}`);
     return this.service.findDtoById(+id);
+  }
+
+  @Patch('precios/actualizacion-masiva')
+  @Roles('Root','Administrador')
+  actualizarPreciosMasivo(@Body() dto:ActualizarPreciosMasivosDto, @Query('usuarioId', ParseIntPipe) usuarioId:number,){
+    return this.service.actualizarPreciosMasivos(dto,usuarioId)
   }
 
   @Put(':id')
@@ -230,6 +268,10 @@ export class ProductoController {
     const data = await this.service.findByIdConAuditoria(id);
     return data;
   }
+
+  
+  
+
 
 
 }

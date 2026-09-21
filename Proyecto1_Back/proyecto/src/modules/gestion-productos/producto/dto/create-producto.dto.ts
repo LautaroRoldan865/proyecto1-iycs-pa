@@ -111,6 +111,8 @@ export class CreateProductoDto {
 
   createdAt?: Date;
 
+  /*esto no lo elimino pero ya no lo necesitamos (no quiero romper nada jajaja) -mili */
+  @IsOptional()
   @IsEnum(AlicuotaIva, {
     message:
       'tipo debe ser ALICUOTA_0  ALICUOTA_105, ALICUOTA_21, ALICUOTA_27,',

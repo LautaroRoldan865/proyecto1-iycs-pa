@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -28,9 +29,15 @@ import { ProductoUniquenessValidator } from '../../infraestructure/validators/pr
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
 import { PresentacionService } from '../../../presentacion/application/services/presentacion.service';
+import { ActualizarPreciosMasivosDto, TipoAjustePrecio } from '../../dto/actualizar-precios-masivos.dto';
+import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
+import { DataSource } from 'typeorm';
+import { PrecioInvalidoException } from '../../domain/exceptions/precio-invalido.exception';
+import { ActualizarPreciosMasivosUseCase } from '../use-cases/actualizar-precios-masivos.use-case';
 import { GeneradorDenominacionService } from '../../domain/services/generador-denominacion.service';
 import { GenerarDenominacionDto } from '../../dto/generar-denominacion.dto';
 import { SuperlineaService } from 'src/modules/gestion-productos/superlinea/application/service/superlinea.service';
+import { ProductoCalculoHelper } from '../../domain/helpers/producto-calculos.helper';
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
@@ -58,6 +65,9 @@ export class ProductoService {
 
     private readonly productoDeletePolicy: ProductoDeletePolicy,
 
+    @Inject('UnitOfWork') private readonly uow: IUnitOfWork,
+
+    private readonly actualizarPreciosMasivosUseCase: ActualizarPreciosMasivosUseCase,
   ) { }
 
   private readonly ENTITY_NAME = 'Producto';
@@ -205,6 +215,19 @@ export class ProductoService {
     };
   }
 
+  async findByBusquedaParcial(busqueda: string,skip: number,take: number): Promise<{ data: GetProductoDto[]; total: number }> {
+    this.logger.warn(`service`);
+    const result = await this.repository.findByBusquedaParcial(busqueda,skip,take);
+    console.log("Productos buscados:", result)
+    return {
+      data: result.data.map((producto) => {
+        return ProductoMapper.toBusquedaDto(producto);
+      }),
+      total: PaginacionUtils.totalItems(result.total),
+    };
+  }
+
+
 
   async findBy(
     denominacion: string,
@@ -213,6 +236,7 @@ export class ProductoService {
     codigoReferencia: string,
     marca_id: number,
     linea_id: number,
+    superlinea_id: number | undefined, // CR-004: filtro por SuperLínea (CA-004.3)
     proveedor_id: number,
     conStock: boolean,
     skip: number,
@@ -226,6 +250,7 @@ export class ProductoService {
       codigoReferencia,
       marca_id,
       linea_id,
+      superlinea_id, // CR-004
       proveedor_id,
       conStock,
       skip,
@@ -541,6 +566,9 @@ export class ProductoService {
     return { marca, linea, presentacion, usuario };
   }
 
+  async actualizarPreciosMasivos( dto:ActualizarPreciosMasivosDto, usuarioId?:number){
+    return this.actualizarPreciosMasivosUseCase.ejecutar(dto,usuarioId); 
+  }
 
   async generarDenominacionAutomatica(dto: GenerarDenominacionDto){
     const marca = await this.marcaService.findEntityById(dto.marcaId);
@@ -553,4 +581,15 @@ export class ProductoService {
 
   }
 
+  async obtenerHistorialPrecios(productoId:number):Promise<HistorialPrecio[]>{
+    return this.repository.findHistorialPreciobyProductoId(productoId)
+  }
+
+  calcularPrecio(costo: number, margen: number) {
+    const precio = ProductoCalculoHelper.calcularPrecio(costo, margen);
+
+    return {
+      precio,
+    };
+  }
 }

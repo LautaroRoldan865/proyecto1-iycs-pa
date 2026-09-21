@@ -48,19 +48,14 @@ export default function RegistrarActualizarProductoForm({
 
   const { configuracion } = useConfiguracionSistema();
   const [rStockCritico, setStockCritico] = useState(false);
-  const [pack, setPack] = useState(false);
-  const [usaOferta, setUsaOferta] = useState(false);
+
   const [lineaSeleccionada, setLineaSeleccionada] = useState<Linea>({} as Linea);
 
   console.log("Configuración del sistema:", configuracion);
 
   const methods = useForm<FormValues>({
-    resolver: yupResolver(schema(rStockCritico, pack, usaOferta)),
-    defaultValues: producto
-      ? transformData(producto)
-      : {
-          alicuotaIva: AlicuotaIva.ALICUOTA_21,
-        },
+    resolver: yupResolver(schema(rStockCritico)),
+   
   });
 
   const {
@@ -81,8 +76,12 @@ export default function RegistrarActualizarProductoForm({
   const [lineas, setLineas] = React.useState<SelectLinea[]>([]);
   const [presentaciones, setPresentaciones] = React.useState<SelectPresentacion[]>([]);
 
+  //nuevo, para calcular el precio
+  const [precioCalculado, setPrecioCalculado] = useState<number>(0);
+  const [calculandoPrecio, setCalculandoPrecio] = useState(false);
+
   //pone a la denominación como vacia
-  const [denominacionPresentacion, setDenominacionPresentacion] = useState("");
+  const [denominacionPresentacion, setDenominacionPresentacion] = useState(" ");
 
   //cambia el estado
   const [selectedPresentacion, setSelectedPresentacion] =
@@ -90,6 +89,7 @@ export default function RegistrarActualizarProductoForm({
   
   const [denominacionMarca, setDenominacionMarca] = useState(" ");
   const [denominacionLinea, setDenominacionLinea] = useState(" ");
+
   const [selectedLinea, setSelectedLinea] = React.useState<SelectLinea>();
   const [selectedMarca, setSelectedMarca] = React.useState<SelectMarca>();
   const [mostrarFormularioLinea, setMostrarFormularioLinea] = useState(false);
@@ -101,19 +101,19 @@ export default function RegistrarActualizarProductoForm({
 
   const stock = watch(`stock`);
   const stockMinimo = watch("stockMinimo");
-  const cantidadPorPack = watch("cantidadPorPack");
+
   const utilizaStockMinimo = watch("utilizaStockMinimo");
-  const utilizaPack = watch("utilizaPack");
+
   
 
   //=============================== CONSTANTES PARA MOVIMIENTO ENTRE CAMPOS ==================================
   const denominacionProductoRef = useRef<HTMLInputElement>(null);
   useEnterFocus(denominacionProductoRef);
   const observacionRef = useRef<HTMLInputElement>(null);
-  const ubicacionRef = useRef<HTMLInputElement>(null);
+
   const selectTipoProductoRef = useRef<HTMLDivElement>(null);
-  const codigoBarraRef = useRef<HTMLInputElement>(null);
-  const selectAlicuotaIvaRef = useRef<HTMLDivElement>(null);
+
+ 
   const precioOfertaRef = useRef<HTMLInputElement>(null);
   const denominacionLineaRef = useRef<HTMLInputElement>(null);
   const selectLineaRef = useRef<HTMLDivElement>(null);
@@ -129,26 +129,13 @@ export default function RegistrarActualizarProductoForm({
 
   //=============================== FUNCIONALIDAD ==================================
 
-  useEffect(() => {
-    if (!utilizaStockMinimo) {
-      setValue("stockMinimo", 0);
-    }
-    if (!utilizaPack) {
-      setValue("cantidadPorPack", 0);
-    }
-    
-  }, [utilizaStockMinimo, utilizaPack, false, setValue]);
+
 
   useEffect(() => {
     setValue("stockMinimo", lineaSeleccionada.stockMinimo || 0);
     setValue("utilizaStockMinimo", lineaSeleccionada.utilizaStockMinimo || false);
   }, [lineaSeleccionada]);
 
-  useEffect(() => {
-    setPack(utilizaPack || false);
-    setStockCritico(utilizaStockMinimo || false);
-    setUsaOferta(false);
-  }, [utilizaPack, utilizaStockMinimo, false]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -160,21 +147,21 @@ export default function RegistrarActualizarProductoForm({
           setValue("marcaId", producto.marca.id || 0);
           setSelectedMarca(producto.marca);
 
+          setValue("presentacionId", producto.presentacion?.id || 0);
+          setSelectedPresentacion(producto.presentacion || null);
+
           
           setValue("denominacion", producto.denominacion || "");
           setValue("observacion", producto.observacion || null);
-          setValue("codigoProveedor", producto.codigoProveedor || "");
-          setValue("codigoBarra", producto.codigoBarra || null);
+        
           setValue("stock", producto.stock || 0);
           setValue("costo", producto.costo || 0);
           
           //setValue("oferta", producto.oferta || false);
-          setValue("alicuotaIva", producto.alicuotaIva || 0);
-
+      
           setValue("stockMinimo", producto.stockMinimo || 0);
           setValue("utilizaStockMinimo", producto.utilizaStockMinimo || false);
-          setValue("cantidadPorPack", producto.cantidadPorPack || 0);
-          setValue("utilizaPack", producto.utilizaPack || false);
+        
         
           console.error("llega aca", producto);
         
@@ -205,7 +192,7 @@ export default function RegistrarActualizarProductoForm({
 
         if (!confirmar) return; // el usuario canceló
       }
-      //DUDA -> Porque el payload tiene porcentaje en vez de margen
+
       if (producto) {
         const payload = {
           ...formData,
@@ -269,6 +256,47 @@ export default function RegistrarActualizarProductoForm({
       
     } catch (error) {
       console.error("Error al buscar por código:", error);
+    }
+  };
+
+  const handleCalcularPrecio = async () => {
+    const costo = watch("costo");
+    const margen = watch("margen");
+
+    if (costo === undefined || costo === null) {
+      setError("costo", {
+        type: "manual",
+        message: "El costo es obligatorio para calcular el precio.",
+      });
+      return;
+    }
+
+    if (margen === undefined || margen === null) {
+      setError("margen", {
+        type: "manual",
+        message: "El margen es obligatorio para calcular el precio.",
+      });
+      return;
+    }
+
+    try {
+      setCalculandoPrecio(true);
+
+      const response = await ProductoService.calcularPrecio({
+        costo: Number(costo),
+        margen: Number(margen),
+      });
+
+      setPrecioCalculado(response.precio);
+    } catch (error) {
+      const errorMessage = parseApiError(error);
+
+      setError("root", {
+        type: "manual",
+        message: errorMessage,
+      });
+    } finally {
+      setCalculandoPrecio(false);
     }
   };
 
@@ -402,20 +430,33 @@ export default function RegistrarActualizarProductoForm({
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
                    <PorcentajeInput
-                    name="porcentaje"
+                    name="margen"
                     label="Margen"
-                    value={watch("porcentaje") || 0}
-                    onChange={(value) => setValue("porcentaje", value, { shouldValidate: true })}
+                    value={watch("margen") || 0}
+                    onChange={(value) => setValue("margen", value, { shouldValidate: true })}
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
-                  <PriceInput
-                    name="precio"
-                    label="Precio"
-                    value={watch("precio") || 0}
-                    onChange={(value) => setValue("precio", value, { shouldValidate: true })}
-                    maxDigits={9}
-                    disabled={producto && producto.sistema > 0 ? true : false}
-                  />
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <PriceInput
+                        name="precio"
+                        label="Precio"
+                        value={precioCalculado}
+                        onChange={() => {}}
+                        maxDigits={9}
+                        disabled={true}
+                      />
+                    </div>
+
+                    
+                  </div>
+                  <Button
+                      type="button"
+                      onClick={handleCalcularPrecio}
+                      disabled={!watch("costo") || watch("margen") === undefined}
+                    >
+                      Calcular precio
+                    </Button>
                  
 
                   

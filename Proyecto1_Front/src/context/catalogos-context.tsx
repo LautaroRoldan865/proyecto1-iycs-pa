@@ -7,6 +7,8 @@ import { SelectProveedor } from "../interfaces/gestion-organizacion/proveedor/in
 import { SelectCondicionIva } from "../interfaces/gestion-organizacion/condicion-iva/interfaces-condicion-iva";
 import { SelectProvincia } from "../interfaces/gestion-organizacion/localidad/interfaces-localidad";
 import { SelectFamiliaBanco } from "../interfaces/gestion-organizacion/banco/interfaces-banco";
+// CR-004 (CA-004.3): Import de SelectSuperlinea para el filtro por SuperLínea
+import { SelectSuperlinea } from "../interfaces/gestion-producto/superlinea/interfaces-superlinea";
 
 interface CatalogosContextType {
   lineas: SelectLinea[];
@@ -25,6 +27,10 @@ interface CatalogosContextType {
   setProvincias: (provincias: SelectProvincia[]) => void;
   familiasBanco: SelectFamiliaBanco[];
   setFamiliasBanco: (familias: SelectFamiliaBanco[]) => void;
+  // CR-004 (CA-004.3): Catálogo de SuperLíneas para el select del filtro
+  // Arranca vacío hasta que CR-003 exponga el endpoint y se haga el fetch
+  superlineas: SelectSuperlinea[];
+  setSuperlineas: (superlineas: SelectSuperlinea[]) => void;
 }
 
 const CatalogosContext = createContext<CatalogosContextType | null>(null);
@@ -44,6 +50,8 @@ export const CatalogosProvider = ({ children }: { children: ReactNode }) => {
   const [condicionesIva, setCondicionesIva] = useState<SelectCondicionIva[]>([]);
   const [provincias, setProvincias] = useState<SelectProvincia[]>([]);
   const [familiasBanco, setFamiliasBanco] = useState<SelectFamiliaBanco[]>([]);
+  // CR-004 (CA-004.3): SuperLíneas — vacío hasta que CR-003 esté integrado
+  const [superlineas, setSuperlineas] = useState<SelectSuperlinea[]>([]);
 
   return (
     <CatalogosContext.Provider
@@ -64,6 +72,8 @@ export const CatalogosProvider = ({ children }: { children: ReactNode }) => {
         setProvincias,
         familiasBanco,
         setFamiliasBanco,
+        superlineas,       // CR-004
+        setSuperlineas,    // CR-004
       }}
     >
       {children}

@@ -32,6 +32,10 @@ import { NotificacionModal } from "../../../NotificacionModal/modales/Notificaci
 import { ProductoNotificacion, EntidadTipo } from "../../../NotificacionModal/interfaces/notificacion.types";
 import { getRoles, getUsuarioId } from "../../../../utils/auth";
 import { puedeHacerAcciones } from "../domain/permisos-producto";
+// CR-004 (CA-004.3): Servicio de SuperLínea para poblar el selector del filtro.
+// Consume el endpoint GET /superlinea/for-select implementado en CR-003 (Vicky).
+import SuperlineaService from "../../superlinea/services/superlinea-service";
+import { BusquedaParcialProducto } from "../interfaces/interface-producto-busqueda-parcial";
 
 
 export default function ConsultarProductos() {
@@ -52,11 +56,11 @@ export default function ConsultarProductos() {
   const [productoNotificacionSeleccionado, setProductoNotificacionSeleccionado] = useState<ProductoNotificacion | null>(null);
   const usuarioId = getUsuarioId();
   const { configuracion } = useConfiguracionSistema();
-  const [codigo, setCodigo] = useState<string>("");
-  const [exacto, setExacto] = useState<boolean>(true);
+  const [busqueda, setBusqueda] = useState<string>("");
   const [auditoria, setAuditoria] = useState<Auditoria>({} as Auditoria);
   const isMounted = useRef(false);
   const inicializacionCompleta = useRef(false);
+  const busquedaParcialActiva = useRef(false);
 
   
    // =========================
@@ -82,17 +86,19 @@ export default function ConsultarProductos() {
     limpiarFiltros,
     buscar,
     setBuscar,
-    setBusquedaRapida,
+    setBusquedaParcial,
   } = useFiltrosContext();
 
   const filtrosInicialesConsultarProducto = useFiltrosIniciales("consultar-producto");
 
-    // Contexto de catálogos
+  // Contexto de catálogos — se agregan/actualizan las listas para los selects de la sidebar
   const {
     setLineas,
     setMarcas,
     setProveedores,
+    setSuperlineas, // CR-004 (CA-004.3): lista de SuperLíneas para el selector del filtro
   } = useCatalogosContext();
+
   
   // Setear qué filtros mostrar en la sidebar
   useEffect(() => {
@@ -102,6 +108,7 @@ export default function ConsultarProductos() {
       denominacion: true,
       codigoProveedor: true,
       linea: true,
+      superlinea: true, // CR-004 (CA-004.3): Filtro por SuperLínea
       marca: true,
       proveedor: true,
       conStock: true,
@@ -112,14 +119,6 @@ export default function ConsultarProductos() {
       inicializacionCompleta.current = true;
     }, 500);
   }, []);
-
-  useEffect(() => {
-    if (!inicializacionCompleta.current) return;
-    const timer = setTimeout(() => {
-      handleBuscarProductosRapido();
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [codigo, exacto]);
 
   useEffect(() => {
     if (buscar.cont > 0 && buscar.componente === "consultar-producto") {
@@ -212,6 +211,39 @@ export default function ConsultarProductos() {
   useEffect(() => {
     fetchProveedores();
   }, [valoresFiltros.denominacionProveedor]);
+
+  /**
+   * CR-004 (CA-004.3): Fetch de SuperLíneas para el selector del filtro de búsqueda.
+   *
+   * Llama al endpoint GET /superlinea/for-select?denominacion=<texto> (creado en CR-003 por Vicky).
+   * Se dispara cada vez que el usuario escribe en el input de denominación del acordeón "SuperLínea"
+   * del sidebar. Los resultados se guardan en el contexto de catálogos (setSuperlineas) para que
+   * el select de react-select los muestre como opciones.
+   *
+   * El mínimo de caracteres requerido se obtiene de la configuración del sistema
+   * (configuracion.caracteresParaBusqueda), igual que el resto de los fetch del componente.
+   */
+  const fetchSuperlineas = async () => {
+    setError(null);
+    try {
+      const caracteresParaBusqueda = configuracion?.caracteresParaBusqueda ?? 4;
+      if (
+        valoresFiltros.denominacionSuperlinea &&
+        valoresFiltros.denominacionSuperlinea.length >= caracteresParaBusqueda
+      ) {
+        const superlineas = await SuperlineaService.obtenerParaSelect(
+          valoresFiltros.denominacionSuperlinea
+        );
+        setSuperlineas(superlineas);
+      }
+    } catch (err: any) {
+      console.error("Error al obtener superlineas:", err);
+      setError("No se pudieron cargar las superlineas.");
+    }
+  };
+  useEffect(() => {
+    fetchSuperlineas();
+  }, [valoresFiltros.denominacionSuperlinea]);
 
   const handleAbrirActualizarProducto = async (id: number) => {
     if (id) {
@@ -356,11 +388,17 @@ export default function ConsultarProductos() {
 
     setLoading(true);
 
+    // CA-004.6: la denominación se envía solo si tiene mínimo 2 caracteres
+    const denominacionFiltro = (valoresFiltros.denominacion ?? "").length >= 2
+      ? valoresFiltros.denominacion
+      : undefined;
+
     const filtrosConPaginacion = {
-      denominacion: valoresFiltros.denominacion,
+      denominacion: denominacionFiltro,
       codigoProveedor: valoresFiltros.codigoProveedor,
       codigoReferencia: valoresFiltros.codigoReferencia,
       lineaId: valoresFiltros.lineaId,
+      superlineaId: valoresFiltros.superlineaId, // CR-004 (CA-004.3)
       marcaId: valoresFiltros.marcaId,
       proveedorId: valoresFiltros.proveedorId,
       conStock: valoresFiltros.conStock,
@@ -394,19 +432,26 @@ export default function ConsultarProductos() {
   };
 
   const handleBuscarProductos = async (botonBuscar?: boolean) => {
-    setBusquedaRapida(false);
+    busquedaParcialActiva.current = false;
+    setBusquedaParcial(false);
     if (botonBuscar) {
       resetearPaginacion();
     }
     setLoading(true);
 
+    // CA-004.6: la denominación se envía solo si tiene mínimo 2 caracteres
+    const denominacionFiltro = (valoresFiltros.denominacion ?? "").length >= 2
+      ? valoresFiltros.denominacion
+      : undefined;
+
     const filtrosConPaginacion = {
-      denominacion: valoresFiltros.denominacion,
+      denominacion: denominacionFiltro,
       codigoProveedor: valoresFiltros.codigoProveedor,
       codigoReferencia: valoresFiltros.codigoReferencia,
       codProveedorExacto: valoresFiltros.codProveedorExacto,
       codReferenciaExacto: valoresFiltros.codReferenciaExacto,
       lineaId: valoresFiltros.lineaId,
+      superlineaId: valoresFiltros.superlineaId, // CR-004 (CA-004.3)
       marcaId: valoresFiltros.marcaId,
       proveedorId: valoresFiltros.proveedorId,
       conStock: valoresFiltros.conStock,
@@ -420,30 +465,47 @@ export default function ConsultarProductos() {
     setLoading(false);
   };
 
+  const handleLimpiarBusqueda = () => {
+    setBusqueda("");
+    busquedaParcialActiva.current = false;
+    setBusquedaParcial(false);
+
+    if (paginaActual === 1) {
+      handleBuscarProductos();
+    } else {
+      resetearPaginacion();
+    }
+  };
+
   const handleBuscarProductosRapido = async (botonBuscar?: boolean) => {
-    setBusquedaRapida(true);
+    busquedaParcialActiva.current = true;
+    setBusquedaParcial(true);
     if (botonBuscar) {
       resetearPaginacion();
     }
     setLoading(true);
 
-    const filtrosConPaginacion = {
-      codigo: codigo,
-      exacto: exacto,
-      skip: skip,
-      take: take,
+    const parametros:  BusquedaParcialProducto = {
+      busqueda,
+      skip,
+      take,
     };
 
-    const productosFiltrados = await ProductoService.obtenerRapido(filtrosConPaginacion);
+
+    const productosFiltrados = await ProductoService.obtenerBusquedaParcial(parametros);
     setProductos(productosFiltrados.data);
     setEntidadesTotales(productosFiltrados.total);
     setLoading(false);
   };
+  
 
   // MANEJO DE PAGINACION ===========================================
 
   useEffect(() => {
-    if (filtrosInicializados === true) {
+    if (filtrosInicializados !== true) return; 
+    if (busquedaParcialActiva.current) {
+      handleBuscarProductosRapido();
+    } else {
       handleBuscarProductos();
     }
   }, [paginaActual, filtrosInicializados, take]);
@@ -514,11 +576,10 @@ export default function ConsultarProductos() {
               {/*  HEADER Desktop */}
               <ProductosHeader
                 roles={getRoles()}
-                codigo={codigo}
-                exacto={exacto}
-                onChangeCodigo={setCodigo}
-                onChangeExacto={setExacto}
-                onBuscarRapido={() => handleBuscarProductosRapido(true)}
+                busqueda={busqueda}
+                onChangeBusqueda={setBusqueda}
+                onBuscarParcial={() => handleBuscarProductosRapido(true)}
+                onLimpiarBusqueda={handleLimpiarBusqueda}
                 onNuevo={openModal}
                 total={entidadesTotales}
                 mostrados={productos.length}
@@ -530,12 +591,11 @@ export default function ConsultarProductos() {
 
               <div className="lg:hidden">
                 <ProductosHeaderLg
-                codigo={codigo}
-                exacto={exacto}
+                busqueda={busqueda}
                 roles={getRoles()}
-                onChangeCodigo={setCodigo}
-                onChangeExacto={setExacto}
-                onBuscarRapido={() => handleBuscarProductosRapido(true)}
+                onChangeBusqueda={setBusqueda}
+                onBuscarParcial={() => handleBuscarProductosRapido(true)}
+                onLimpiarBusqueda={handleLimpiarBusqueda}
                 onNuevo={openModal}
                 total={entidadesTotales}
                 mostrados={productos.length}
@@ -575,8 +635,20 @@ export default function ConsultarProductos() {
                     />
                   ))}
                 </div>
-                
 
+                {/* CA-004.7: Mensaje cuando no hay resultados */}
+                {!loading && filtrosInicializados && productos.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg p-8 max-w-md">
+                      <p className="text-gray-500 dark:text-gray-400 text-base font-medium">
+                        No se encontraron productos que coincidan con los criterios de búsqueda.
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+                        Intentá modificar los filtros o ingresá al menos 2 caracteres en la denominación.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
               </CardContent>
             </Card>
@@ -641,4 +713,5 @@ export default function ConsultarProductos() {
 
     </div>
   );
+  
 }

@@ -222,13 +222,13 @@ export default function RegistrarActualizarLineaForm({
                     selectSuperlineaRef={selectSuperlineaRef}
                     superlineas={superlineas}
                     selectedSuperlinea={selectedSuperlinea}
-                    superLineaId={watch("superLineaId")}
+                    superlineaId={watch("superlineaId")}
                  
                     errors={errors}
                     onEnterSuperlinea={(e) => handleEnterEnSelect(e, "SUPERLINEA")}
                     onEnterDenominacion={enterToDenominacionSuperlinea}
                     onSuperlineaChange={(superlinea) => {
-                      methods.setValue("superLineaId", superlinea?.id || 0);
+                      methods.setValue("superlineaId", superlinea?.id || 0);
                       setSuperlineaSeleccionada(superlinea as any);
                     }}
                     onAgregarSuperlinea={() => setMostrarFormularioSuperlinea(true)}
