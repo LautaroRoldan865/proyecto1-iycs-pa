@@ -11,6 +11,7 @@ export enum UnidadPresentacion {
   UNIDADES = 'UNIDADES',
 }
 @Entity('presentacion-producto')
+@Index(['denominacion', 'deletedAt'], { unique: true })
 export class Presentacion {
     @ApiProperty()
     @PrimaryGeneratedColumn()

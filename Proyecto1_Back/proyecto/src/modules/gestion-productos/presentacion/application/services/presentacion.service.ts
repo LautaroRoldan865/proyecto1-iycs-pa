@@ -200,7 +200,13 @@ export class PresentacionService{
       }
 
 
-  private async checkDenominacionExists(denominacion:string, id:number){
-    const exists = await this.presentacionRepository.findByDenominacionWith(denominacion);
-  }
+   private async checkDenominacionExists(denominacion: string, id: number) {
+      const exists = await this.presentacionRepository.findByDenominacionWith(denominacion);
+      if (exists && exists.id !== id) {
+        this.logger.warn(
+          `${this.ENTITY_NAME} Conflicto: denominación ya está en uso: ${denominacion}`,
+        );
+        throw new ConflictException('Denominación ya en uso.');
+      }
+    }
 }
