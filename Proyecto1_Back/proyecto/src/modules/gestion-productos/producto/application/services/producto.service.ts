@@ -71,14 +71,14 @@ export class ProductoService {
     const { marca, linea, usuario, presentacion } =
       await this.validarYPrepararCreacion(dto);
 
-
+    
 
     const entity = await this.repository.create(
       dto,
       linea,
       marca,
       presentacion,
-      usuario,
+      usuario, //CA-001.4
     );
 
     return MessageFrontUtils.createSimple(
@@ -111,6 +111,8 @@ export class ProductoService {
 
     const marcaId = dto.marcaId ?? productoActual.marcaId;
     const lineaId = dto.lineaId ?? productoActual.lineaId;
+    const costo = dto.costo ?? productoActual.costo;
+    const margen = dto.margen ?? productoActual.margen;
     const presentacionId =
       dto.presentacionId ?? productoActual.presentacionId;
 
@@ -120,13 +122,15 @@ export class ProductoService {
     const alicuotaIva =
       dto.alicuotaIva ?? productoActual.alicuotaIva;
 
-    // Validaciones intrínsecas
+    // Validaciones intrínsecas, modificación -> se tuvo que agregar costo y margen para su validación
     this.intrinsicValidationService.validarDatosBasicos({
       denominacion,
       marcaId,
       lineaId,
       presentacionId,
       alicuotaIva,
+      costo,
+      margen
     });
 
     // Validar entidades relacionadas
@@ -152,7 +156,7 @@ export class ProductoService {
       );
     }
 
-    // Usuario
+    // Usuario. CA-001.4
     if (dto.usuarioUpdatedId === undefined) {
       throw new InternalServerErrorException(
         'El usuarioUpdatedId es obligatorio.',
@@ -406,6 +410,8 @@ export class ProductoService {
       lineaId: dto.lineaId,
       alicuotaIva: dto.alicuotaIva,
       presentacionId: dto.presentacionId,
+      costo: dto.costo,
+      margen: dto.margen
     });
 
     // Validar unicidad (Infrastructure - DB)
@@ -432,8 +438,6 @@ export class ProductoService {
       linea,
       presentacion
     );
-
-
   
 
     //  Validar usuario existe (Infrastructure)
@@ -495,6 +499,8 @@ export class ProductoService {
       lineaId,
       presentacionId,
       alicuotaIva: dto.alicuotaIva ?? productoActual.alicuotaIva,
+      costo: dto.costo ?? productoActual.costo,
+      margen: dto.margen ?? productoActual.margen,
     });
 
     // Validar unicidad (excluyendo el ID actual)

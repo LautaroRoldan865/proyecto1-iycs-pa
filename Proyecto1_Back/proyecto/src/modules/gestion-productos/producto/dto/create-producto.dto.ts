@@ -11,6 +11,7 @@ import {
   IsInt,
   IsEnum,
   ValidateNested,
+  Min,
 } from 'class-validator';
 import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
 import { CreatePresentacionDto } from '../../presentacion/dto/create-presentacion.dto';
@@ -20,16 +21,16 @@ export class CreateProductoDto {
   //el transform le saco el .toLowerCase() -> Si no no se cumple el CA-005.3 y CA-005.4,
   @Transform(({ value }) => value.trim())
   @IsString({ message: 'La denominación debe ser una cadena de texto.' }) // Valida que sea string
-  //lo comento por ahora, porque se supone que al generarla automáticamente puede ser opcional que venga esto -mili
+  //lo comento por ahora, porque se supone que al generarla automáticamente puede ser opcional que venga esto -mili -> DUDA!!! Choca con CA-001.2
   //@IsNotEmpty({ message: 'La denominación no puede estar vacía.' }) // Valida que no esté vacía
   @IsOptional()
-  @MaxLength(255, { message: 'La denominación no puede estar vacía.' })
+  @MaxLength(255, { message: 'La denominación no puede superar los 255 caracteres.' })
   /*  @Matches(/^[A-Za-z0-9 áéíóúÁÉÍÓÚñÑ.\-/]+$/, {
     message:
       'La denominación solo puede contener letras, números, espacios, puntos, guiones y barras.',
   }) */
   @Matches(/^[\w áéíóúÁÉÍÓÚñÑ.\-/%]+$/, {
-    message: 'La denominación contiene caracteres inválidos ',
+    message: 'La denominación contiene caracteres inválidos. Solo puede contener letras, números, espacios, puntos, guiones y barras. ',
   })
   denominacion: string;
 
@@ -80,9 +81,10 @@ export class CreateProductoDto {
   @Transform(({ value }) => value === 'true' || value === true)
   envioGratis?: boolean;
 
-  @IsOptional()
+  @IsNotEmpty({ message: 'El costo es obligatorio.' })
   @IsNumber()
-  costo?: number;
+   @Min(0, { message: 'El costo no puede ser negativo.' }) //CA-001.1
+  costo: number;
 
   @IsOptional()
   @IsNumber()
@@ -104,6 +106,7 @@ export class CreateProductoDto {
 
   @IsNotEmpty({ message: 'El margen es obligatorio.' })
   @IsNumber()
+  @Min(0, { message: 'El margen no puede ser negativo.' }) //CA-001.1
   margen: number;
 
   createdAt?: Date;

@@ -70,6 +70,7 @@ export const schema = (utilizaStockMinimo: boolean, utilizaPack: boolean, usaOfe
       if (value==null || costo == null ) return true;
       return value>= costo;
     }),
+    //Cambiar a Margen y sacar para que no sea opcional
     porcentaje: yup.number().typeError("El porcentaje debe ser un valor númerico").min(0,"El porcentaje mínimo debe ser mayor o igual a 0").max(999, "El porcentaje máximo permitido es de 999").optional().nullable(),
     /* costoEnDolar: yup.boolean().optional().nullable(),
     costoDolar: yup.number().optional().nullable(),
@@ -165,7 +166,7 @@ export const transformData = (producto: Producto): FormValues => {
     stock: producto.stock ?? null,
     costo: producto.costo ?? null,
     precio: producto.precio ?? null,
-    porcentaje: producto.porcentaje ?? null,
+    porcentaje: producto.porcentaje ?? null, //Cambiar a margen
    // oferta: producto.oferta ?? null,
     /* costoEnDolar: producto.costoEnDolar ?? null,
     costoDolar: producto.costoDolar ?? null,

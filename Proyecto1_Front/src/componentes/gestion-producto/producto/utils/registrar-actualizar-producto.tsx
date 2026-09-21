@@ -205,7 +205,7 @@ export default function RegistrarActualizarProductoForm({
 
         if (!confirmar) return; // el usuario canceló
       }
-
+      //DUDA -> Porque el payload tiene porcentaje en vez de margen
       if (producto) {
         const payload = {
           ...formData,
