@@ -457,6 +457,10 @@ export default function RegistrarActualizarProductoForm({
                     >
                       Calcular precio
                     </Button>
+
+                    <div>
+                      <p>Si no especifica un margen, por defecto se tomará el 15%. (Margen Estándar)</p>  
+                    </div>
                  
 
                   

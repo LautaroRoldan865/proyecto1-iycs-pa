@@ -1,41 +1,42 @@
 import { useState } from "react";
 import { Linea } from "../../../../interfaces/gestion-producto/linea/interfaces-linea";
 import { Auditoria } from "../../../../interfaces/generales/interfaces-generales";
+import { Superlinea } from "../../../../interfaces/gestion-producto/superlinea/interfaces-superlinea";
 
-export type LineaModalTipo = "alta" | "edicion" | "auditoria" | null;
+export type SuperlineaModalTipo = "alta" | "edicion" | "auditoria" | null;
 
-export function useSuperLineaModal() {
-  const [tipo, setTipo] = useState<LineaModalTipo>(null);
-  const [linea, setLinea] = useState<Linea | null>(null);
+export function useSuperlineaModal() {
+  const [tipo, setTipo] = useState<SuperlineaModalTipo>(null);
+  const [superlinea, setSuperlinea] = useState<Superlinea | null>(null);
   const [auditoria, setAuditoria] = useState<Auditoria | null>(null);
 
   const abrirAlta = () => {
-    setLinea(null);
+    setSuperlinea(null);
     setAuditoria(null);
     setTipo("alta");
   };
 
-  const abrirEdicion = (linea: Linea) => {
-    setLinea(linea);
+  const abrirEdicion = (superlinea: Superlinea) => {
+    setSuperlinea(superlinea);
     setAuditoria(null);
     setTipo("edicion");
   };
 
   const abrirAuditoria = (auditoria: Auditoria) => {
     setAuditoria(auditoria);
-    setLinea(null);
+    setSuperlinea(null);
     setTipo("auditoria");
   };
 
   const cerrar = () => {
     setTipo(null);
-    setLinea(null);
+    setSuperlinea(null);
     setAuditoria(null);
   };
 
   return {
     tipo,
-    linea,
+    superlinea,
     auditoria,
     abrirAlta,
     abrirEdicion,

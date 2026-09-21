@@ -101,8 +101,13 @@ export class CreateProductoDto {
   presentacionId:number;
 
 
-  @IsNotEmpty({ message: 'El margen es obligatorio.' })
+  @IsOptional()
   @IsNumber()
+  @Transform(({ value }) =>
+    value === undefined || value === null || value === ''
+      ? 15
+      : Number(value),
+  )
   margen: number;
 
   createdAt?: Date;
