@@ -10,6 +10,8 @@ import { BaseProductoDto } from '../interfaces/base-producto.interface';
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { MarcaService } from 'src/modules/gestion-productos/marca/application/services/marca.service';
 import { IProductoRepository } from '../interfaces/producto.repository-interface';
+//coneccion con el servicio de validacion intrinseca para validar los datos basicos del producto
+import { ProductoIntrinsicValidationService } from '../services/producto-intrinsic-validation.service.ts';
 
 @Injectable()
 export class ProductoValidator {
@@ -19,9 +21,12 @@ export class ProductoValidator {
     private readonly marcaService: MarcaService,
 
     private readonly usuarioValidator: UsuarioValidator,
+    //inyeccion del servicio de validacion intrinseca para validar los datos basicos del producto
+    private readonly intrinsicValidationService: ProductoIntrinsicValidationService,
 
     @Inject('IProductoRepository')
     private readonly repository: IProductoRepository,
+
   ) {}
 
   private assertEntidadValida(entidad: any, tipo: string) {
@@ -64,8 +69,17 @@ export class ProductoValidator {
     return { marca, linea, };
   }
 
+  //CA-001.1, CA-001.2, CA-001.3
   private validarCamposRequeridos(dto: BaseProductoDto) {
-
+    this.intrinsicValidationService.validarDatosBasicos({
+      denominacion: dto.denominacion,
+      marcaId: dto.marcaId,
+      lineaId: dto.lineaId,
+      presentacionId: dto.presentacionId,
+      alicuotaIva: dto.alicuotaIva,
+      costo: dto.costo,
+      margen: dto.margen,
+    });
   }
 
   async validar(dto: BaseProductoDto, tipo: number) {
