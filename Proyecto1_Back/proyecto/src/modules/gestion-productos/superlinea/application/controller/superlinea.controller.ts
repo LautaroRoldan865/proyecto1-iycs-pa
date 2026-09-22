@@ -7,6 +7,9 @@ import { Roles } from 'src/modules/gestion-usuario/auth/roles.decorator';
 import { CreateSuperLineaDto } from '../../dto/create-superlinea.dto';
 import { SuperLineaDto } from '../../dto/superlinea.dto';
 import { UpdateSuperLineaDto } from '../../dto/update-superlinea.dto';
+import { PaginationWithDenominacionDto } from 'src/modules/common/dto/busquedas/pagination-with-denominacion.dto';
+import { NormalizeDenominacionSearchPipe } from 'src/modules/common/pipes/normalize-denominations-search.pipe';
+import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
 
 @ApiTags('Gestion Productos')
 @Controller('superlinea')
@@ -38,6 +41,22 @@ export class SuperlineaController {
     return this.service.findAllForSelect(denominacion);
     }
 
+    @Get('search-by')
+      @Roles('Root', 'Administrador', 'Empleado')
+      @UsePipes(NormalizeDenominacionSearchPipe)
+      findByDenominacionFiltered(
+        @Query() paginationDto: PaginationWithDenominacionDto,
+      ) {
+        const { denominacion = '', skip, take, incluirEliminados } = paginationDto;
+        this.logger.log(`Buscando usuarios con denominación: ${denominacion}`);
+        return this.service.findByDenominacionFiltered(
+          denominacion,
+          skip,
+          take,
+          incluirEliminados,
+        );
+      }
+
     @Get(':id')
     @ApiOkResponse({ type: SuperLineaDto })
     @Roles('Root', 'Administrador', 'Empleado')
@@ -62,12 +81,25 @@ export class SuperlineaController {
     @Roles('Root', 'Administrador', 'Empleado')
     remove(
       @Param('id', ParseIntPipe) id: number,
-      @Body('usuarioDeletedId', ParseIntPipe) usuarioDeletedId: number,
+      //@Body('usuarioDeletedId', ParseIntPipe) usuarioDeletedId: number,
     ) {
         this.logger.warn(
-            `Eliminando ${this.ENTITY_NAME} con ID: ${id} por usuario: ${usuarioDeletedId}`,
+            `Eliminando ${this.ENTITY_NAME}`,
         );
-        return this.service.remove(id, usuarioDeletedId);
+        return this.service.remove(id);
     }
+
+    @Get(':id/audit')
+      @Roles('Root', 'Administrador', 'Empleado')
+      @ApiOkResponse({
+        description: 'Informacion de auditoria',
+        type: AuditoriaDto,
+      })
+      async findByIdConAuditoria(
+        @Param('id', ParseIntPipe) id: number,
+      ): Promise<AuditoriaDto> {
+        const data = await this.service.findByIdConAuditoria(id);
+        return data;
+      }
     
 }

@@ -22,6 +22,7 @@ import ActualizacionMasivaPrecios from "./componentes/gestion-producto/precios/a
 import HistorialPrecios from "./componentes/gestion-producto/precios/historial-precios/util/historial-precios";
 import ListaPrecios from "./componentes/gestion-producto/precios/lista_precios/util/lista-precios";
 import ConsultarPersonal from "./componentes/gestion-organizacion/personal/utils/consultar-personal";
+import ConsultarSuperlineas from "./componentes/gestion-producto/superlinea/utils/consultar-superlinea";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
               </Route>
 
               <Route path="linea" element={<ConsultarLinea />} />
+              <Route path="superlinea" element={<ConsultarSuperlineas/>}/>
               <Route path="usuario" element={<GestionUsuario />} />
               <Route path="producto" element={<ConsultarProducto />} />
               <Route path="cliente" element={<ConsultarCliente />} />

@@ -156,6 +156,7 @@ export default function RegistrarActualizarProductoForm({
         
           setValue("stock", producto.stock || 0);
           setValue("costo", producto.costo || 0);
+          setValue("margen", producto.margen || 0);
           
           //setValue("oferta", producto.oferta || false);
       
@@ -370,7 +371,7 @@ export default function RegistrarActualizarProductoForm({
           title={producto ? "Producto" : "Registrar Producto"}
           subtitle={
             producto
-              ? "Sólo puede visualizarse, no modificarse."
+              ? "Visualización o modificación del producto."
             : "Ingresa los datos."
           }
           icon={<Layers className="form-icon" />}
@@ -457,12 +458,6 @@ export default function RegistrarActualizarProductoForm({
                     >
                       Calcular precio
                     </Button>
-                 
-
-                  
-
-
-         
 
                   <div className="flex-1 min-w-[120px]">
                     {producto ? (

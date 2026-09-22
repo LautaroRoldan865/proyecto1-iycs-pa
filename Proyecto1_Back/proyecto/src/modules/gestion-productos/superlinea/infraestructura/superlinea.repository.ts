@@ -8,6 +8,9 @@ import { CreateSuperLineaDto } from "../dto/create-superlinea.dto";
 import { IUnitOfWork } from "src/modules/common/unit-of-work/iunit-of-work.";
 import { Transactional } from "src/modules/common/decorators/transactional.decoratos";
 import { Usuario } from "src/modules/gestion-usuario/usuario/domain/entities/usuario.entity";
+import { AuditoriaDto } from "src/modules/gestion-sistema/auditoria/dto/auditoria.dto";
+import { DatabaseConnectionException } from "src/modules/common/exceptions/database-connection.exception";
+import { FechaUtils } from "src/modules/common/utils/date/fecha-utils";
 
 @Injectable()
 export class SuperLineaRepository implements ISuperLineaRepository{
@@ -19,6 +22,7 @@ export class SuperLineaRepository implements ISuperLineaRepository{
         private readonly superLineaRepository: Repository<SuperLinea>,
         private readonly dataSource: DataSource,
         @Inject('UnitOfWork') private readonly uow: IUnitOfWork,
+       // private readonly persistenceService: SuperLineaPersistenceAdapter
     ){}
 
     
@@ -83,10 +87,10 @@ export class SuperLineaRepository implements ISuperLineaRepository{
     }
 
     @Transactional()
-    async remove(entity: SuperLinea, usuarioDeletedId: number): Promise<SuperLinea> {
+    async remove(entity: SuperLinea): Promise<SuperLinea> {
         const repository = this.uow.getRepository(SuperLinea);
         entity.deletedAt = new Date();
-        entity.usuarioDeletedId = usuarioDeletedId;
+        //entity.usuarioDeletedId = usuarioDeletedId;
         return await repository.save(entity);
     }
     
@@ -108,13 +112,130 @@ export class SuperLineaRepository implements ISuperLineaRepository{
             .getOne();
     }
 
+    async findByDenominacionFiltered(
+        denominacion: string,
+        skip = 0,
+        take = 10,
+        incluirEliminados = false,
+        ): Promise<{ data: SuperLinea[]; total: number }> {
+
+        this.logger.log(
+            `Buscando SuperLinea: denominacion="${denominacion}", skip=${skip}, take=${take}, incluirEliminados=${incluirEliminados}`,
+        );
+
+        const query = this.superLineaRepository
+            .createQueryBuilder('superlinea');
+
+        // Si NO se quieren incluir eliminados
+        if (!incluirEliminados) {
+            query.andWhere('superlinea.deletedAt IS NULL');
+        }
+
+        // Filtro por denominación
+        if (denominacion?.trim()) {
+            query.andWhere(
+            'UPPER(superlinea.denominacion) LIKE :denominacion',
+            {
+                denominacion: `%${denominacion.trim().toUpperCase()}%`,
+            },
+            );
+        }
+
+        // Orden
+        query.orderBy('superlinea.denominacion', 'ASC');
+
+        // Paginación
+        query.skip(skip);
+        query.take(take);
+
+        // Datos + total
+        const [data, total] = await query.getManyAndCount();
+
+        return {
+            data,
+            total,
+        };
+        }
+    
+    async findByIdConAuditoria(id: number): Promise<AuditoriaDto | null> {
+        try {
+            const raw = await this.superLineaRepository
+            .createQueryBuilder('superlinea')
+            .leftJoin(
+                'usuario',
+                'usuarioCreated',
+                'usuarioCreated.id = superlinea.usuarioCreatedId',
+            )
+            .leftJoin(
+                'usuario',
+                'usuarioUpdated',
+                'usuarioUpdated.id = superlinea.usuarioUpdatedId',
+            )
+            .leftJoin(
+                'usuario',
+                'usuarioDeleted',
+                'usuarioDeleted.id = superlinea.usuarioDeletedId',
+            )
+            .addSelect([
+                'superlinea.id as superlinea_id',
+                'superlinea.denominacion as superlinea_denominacion',
+                'superlinea.createdAt as superlinea_createdAt',
+                'superlinea.updatedAt as superlinea_updatedAt',
+                'superlinea.deletedAt as superlinea_deletedAt',
+                'usuarioCreated.denominacion as usuarioCreated_nombre',
+                'usuarioUpdated.denominacion as usuarioUpdated_nombre',
+                'usuarioDeleted.denominacion as usuarioDeleted_nombre',
+            ])
+            .where('superlinea.id = :id', { id })
+            .getRawOne();
+
+            console.debug('RAW RESULTADO:', raw);
+
+            if (!raw) return null;
+
+            return {
+            id: raw.superlinea_id ?? 0,
+
+            detalle: raw.superlinea_denominacion
+                ? `superlinea ${raw.superlinea_denominacion}`
+                : 'superlinea (sin denominación)',
+
+            createdAt: raw.superlinea_createdAt
+                ? FechaUtils.formatFechaHora(raw.superlinea_createdAt)
+                : '',
+
+            updatedAt: raw.superlinea_updatedAt
+                ? FechaUtils.formatFechaHora(raw.superlinea_updatedAt)
+                : '',
+
+            deletedAt: raw.superlinea_deletedAt
+                ? FechaUtils.formatFechaHora(raw.superlinea_deletedAt)
+                : '',
+
+            usuarioCreated: raw.usuarioCreated_nombre ?? '',
+            usuarioUpdated: raw.usuarioUpdated_nombre ?? '',
+            usuarioDeleted: raw.usuarioDeleted_nombre ?? '',
+            };
+        } catch (error) {
+            console.error('ERROR EN findByIdConAuditoria:', error);
+
+            throw new DatabaseConnectionException(
+            'Error al conectar con la base de datos.',
+            );
+        }
+        }
+
     async hasLines(id: number): Promise<boolean> {
         const count =  await this.superLineaRepository
             .createQueryBuilder('superlinea')
             .innerJoin('superlinea.lineas', 'linea', 'linea.deletedAt IS NULL')
             .where('superlinea.id = :id', { id })
             .getCount();
-        return count > 0;
+        if(count>0){
+            return true;
+        }else{
+            return false;
+        }
     }
 
 }
