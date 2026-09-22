@@ -10,7 +10,7 @@ export interface ISuperLineaRepository{
     findAllFor(denominacion:string): Promise<SuperLinea[]>;
     findOne(id:number): Promise<SuperLinea | null>;
     update( id:number, data:UpdateSuperLineaDto): Promise<SuperLinea>;
-    remove(data: SuperLinea, usuarioDeletedId: number): Promise<SuperLinea>;
+    remove(data: SuperLinea): Promise<SuperLinea>;
     findAll(): Promise<SuperLinea[]>;
     findByDenominacionFiltered(
         denominacion: string,

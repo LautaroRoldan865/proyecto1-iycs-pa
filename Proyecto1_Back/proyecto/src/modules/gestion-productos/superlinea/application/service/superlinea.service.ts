@@ -136,7 +136,7 @@ export class SuperlineaService {
         }
 
 
-    async remove(id: number, usuarioDeletedId: number) {
+    async remove(id: number) {
 
         const entity = await this.findEntityById(id);
 
@@ -144,7 +144,6 @@ export class SuperlineaService {
 
         await this.repository.remove(
             entity,
-            usuarioDeletedId,
         );
 
         return MessageFrontUtils.createSimple(

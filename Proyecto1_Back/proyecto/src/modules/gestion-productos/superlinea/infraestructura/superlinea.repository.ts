@@ -87,10 +87,10 @@ export class SuperLineaRepository implements ISuperLineaRepository{
     }
 
     @Transactional()
-    async remove(entity: SuperLinea, usuarioDeletedId: number): Promise<SuperLinea> {
+    async remove(entity: SuperLinea): Promise<SuperLinea> {
         const repository = this.uow.getRepository(SuperLinea);
         entity.deletedAt = new Date();
-        entity.usuarioDeletedId = usuarioDeletedId;
+        //entity.usuarioDeletedId = usuarioDeletedId;
         return await repository.save(entity);
     }
     
@@ -231,7 +231,11 @@ export class SuperLineaRepository implements ISuperLineaRepository{
             .innerJoin('superlinea.lineas', 'linea', 'linea.deletedAt IS NULL')
             .where('superlinea.id = :id', { id })
             .getCount();
-        return count > 0;
+        if(count>0){
+            return true;
+        }else{
+            return false;
+        }
     }
 
 }

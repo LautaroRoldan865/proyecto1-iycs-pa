@@ -103,11 +103,6 @@ export class CreateProductoDto {
 
   @IsOptional()
   @IsNumber()
-  @Transform(({ value }) =>
-    value === undefined || value === null || value === ''
-      ? 15
-      : Number(value),
-  )
   margen: number;
 
   createdAt?: Date;

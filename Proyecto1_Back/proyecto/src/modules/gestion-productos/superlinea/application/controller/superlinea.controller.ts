@@ -81,12 +81,12 @@ export class SuperlineaController {
     @Roles('Root', 'Administrador', 'Empleado')
     remove(
       @Param('id', ParseIntPipe) id: number,
-      @Body('usuarioDeletedId', ParseIntPipe) usuarioDeletedId: number,
+      //@Body('usuarioDeletedId', ParseIntPipe) usuarioDeletedId: number,
     ) {
         this.logger.warn(
-            `Eliminando ${this.ENTITY_NAME} con ID: ${id} por usuario: ${usuarioDeletedId}`,
+            `Eliminando ${this.ENTITY_NAME}`,
         );
-        return this.service.remove(id, usuarioDeletedId);
+        return this.service.remove(id);
     }
 
     @Get(':id/audit')
