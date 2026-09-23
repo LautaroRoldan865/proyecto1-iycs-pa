@@ -25,6 +25,7 @@ export interface ILineaRepository {
   update(
     id: number,
     data: UpdateLineaDto,
+    superlinea?: SuperLinea
   ): Promise<Linea>;
   remove(data: Linea,usuario:Usuario): Promise<Linea>;
 }

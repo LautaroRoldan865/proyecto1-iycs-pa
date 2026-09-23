@@ -72,6 +72,7 @@ export class LineaPersistenceAdapter
   async update(
     id: number,
     data: UpdateLineaDto,
+    superlinea?:SuperLinea
   ): Promise<Linea> {
     const repo = this.uow.getRepository(Linea);
 
@@ -87,10 +88,12 @@ export class LineaPersistenceAdapter
     entity.denominacion = data.denominacion ?? entity.denominacion;
     entity.utilizaStockMinimo = data.utilizaStockMinimo;
     entity.stockMinimo = data.stockMinimo ?? 0;
-    entity.usuarioCreatedId = data.usuarioCreatedId;
-    entity.superlineaId = data.superlineaId;
+   
+    if (superlinea !== undefined) {
+      entity.superlinea = superlinea;
+      entity.superlineaId = superlinea.id;
+    }
 
-    // Guardar entidad antes de procesar sublíneas (opcional según lógica de negocio)
     const entityActualizada = await repo.save(entity);
 
     return entityActualizada;
