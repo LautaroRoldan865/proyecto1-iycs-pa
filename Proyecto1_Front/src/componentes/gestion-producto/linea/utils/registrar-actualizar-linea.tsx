@@ -86,7 +86,7 @@ export default function RegistrarActualizarLineaForm({
           setValue("denominacion", linea.denominacion || "");
           setValue("observacion", linea.observacion || null);
          
-          setValue("superLineaId", linea.superlinea?.id || 0);
+          setValue("superlineaId", linea.superlinea?.id || 0);
           setSelectedSuperlinea(linea.superlinea);
           
         }
