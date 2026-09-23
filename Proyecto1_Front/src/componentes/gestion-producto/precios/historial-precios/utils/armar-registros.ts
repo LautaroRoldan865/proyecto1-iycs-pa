@@ -33,20 +33,3 @@ export const armarRegistros = (
 /** Más recientes primero; a igual fecha (ajuste masivo), por id descendente. */
 export const ordenarPorFechaDesc = (registros: RegistroHistorial[]): RegistroHistorial[] =>
   [...registros].sort((a, b) => marcaDeTiempo(b.fecha) - marcaDeTiempo(a.fecha) || b.id - a.id);
-
-const normalizar = (texto: string): string =>
-  texto
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
-
-/** Filtra por código o denominación del producto, o por motivo del cambio (sin distinguir tildes ni mayúsculas). */
-export const filtrarRegistros = (registros: RegistroHistorial[], busqueda: string): RegistroHistorial[] => {
-  const texto = normalizar(busqueda);
-  if (!texto) return registros;
-
-  return registros.filter((registro) =>
-    normalizar(`${registro.codigoProveedor} ${registro.denominacion} ${registro.motivo}`).includes(texto),
-  );
-};

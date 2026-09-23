@@ -1,18 +1,13 @@
-import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../../../../ui/Card";
 import EncabezadoHistorial from "../componentes/encabezado-historial";
 import MensajeEstado from "../componentes/mensaje-estado";
 import TablaHistorial from "../componentes/tabla-historial";
 import { useHistorialPrecios } from "../hooks/use-historial-precios";
-import { filtrarRegistros } from "../utils/armar-registros";
 
 export default function HistorialPrecios() {
   const navigate = useNavigate();
   const { registros, cargando, error, productosConError, recargar } = useHistorialPrecios();
-  const [busqueda, setBusqueda] = useState("");
-
-  const registrosFiltrados = useMemo(() => filtrarRegistros(registros, busqueda), [registros, busqueda]);
 
   const contenido = () => {
     if (cargando) return <MensajeEstado tipo="cargando" />;
@@ -20,25 +15,14 @@ export default function HistorialPrecios() {
     if (registros.length === 0) {
       return <MensajeEstado tipo="vacio" mensaje="Todavía no hay cambios de precio registrados." />;
     }
-    if (registrosFiltrados.length === 0) {
-      return <MensajeEstado tipo="vacio" mensaje="No se encontraron cambios para la búsqueda ingresada." />;
-    }
-    return <TablaHistorial registros={registrosFiltrados} />;
+    return <TablaHistorial registros={registros} />;
   };
 
   return (
     <div className="w-full">
       <div className="p-6">
         <Card className="border-gray-200 dark:border-slate-700">
-          <EncabezadoHistorial
-            busqueda={busqueda}
-            total={registros.length}
-            mostrados={registrosFiltrados.length}
-            cargando={cargando}
-            onChangeBusqueda={setBusqueda}
-            onRecargar={recargar}
-            onVolver={() => navigate("/admin/producto")}
-          />
+          <EncabezadoHistorial onVolver={() => navigate("/admin/producto")} />
 
           {!cargando && !error && productosConError > 0 && (
             <MensajeEstado
