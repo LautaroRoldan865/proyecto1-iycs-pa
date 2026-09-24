@@ -154,7 +154,7 @@ const ProductoService = {
         payload,
         { headers }
       );
-
+      console.log('calcule el precio')
       return response.data;
     }catch (error) {
       console.error("Error al calcular precio:", error);

@@ -110,12 +110,14 @@ export default function ActualizarPrecioModal({
         motivo: motivo.trim(),
         };
 
+        console.log('CR-007: datos a enviar para registrar historial: ', datos);
+
        /* await ProductoService.registrarHistorialPrecio(producto.id, {
         ...datos,
         usuarioId: getUsuarioId(),
         });*/
 
-        onSuccess("Actualización de precio registrada correctamente.", datos);
+        onSuccess("Actualización de precio guardada.", datos);
    
     };
 
@@ -225,8 +227,8 @@ export default function ActualizarPrecioModal({
                 className="btn btn-dark"
               >
                 {registrandoHistorial
-                  ? "Registrando..."
-                  : "Registrar Historial"}
+                  ? "Guardando..."
+                  : "Guardar"}
               </Button>
             </CardFooter>
           </form>
