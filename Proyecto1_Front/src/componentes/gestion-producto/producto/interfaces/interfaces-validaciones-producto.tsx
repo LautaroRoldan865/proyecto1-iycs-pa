@@ -16,6 +16,7 @@ export interface FormValues {
   stock?: number | null;
   costo?: number | null;
   margen?: number | null;
+  precio?:number | null;
   /* costoEnDolar?: boolean | null;
   costoDolar?: number | null;
   destacado?: boolean | null;

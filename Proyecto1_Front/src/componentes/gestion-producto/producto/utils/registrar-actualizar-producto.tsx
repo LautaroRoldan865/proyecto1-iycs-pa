@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { CardContent, CardFooter } from "../../../ui/Card";
 import { Button } from "../../../ui/Button";
@@ -32,6 +32,7 @@ import PorcentajeInput from "../../../herramientas/formateo-de-campos/porcentaje
 import PresentacionesSelector from "../componentes/configuracion/presentacion-selector";
 import GenerarDenominacionButton from "../componentes/boton-generar-denom";
 import RegistrarActualizarPresentacionForm from "../../linea/utils/registrar-actualizar-presentacion";
+import ActualizarPrecioModal from "./actualizar-precio/actualizar-precio-modal";
 
 
 export default function RegistrarActualizarProductoForm({
@@ -58,13 +59,31 @@ export default function RegistrarActualizarProductoForm({
    
   });
 
+  
+
   const {
     handleSubmit,
     formState: { isSubmitting, errors },
     setValue,
     watch,
     setError,
+    control,
   } = methods;
+
+  const costo = useWatch({
+    control,
+    name: "costo",
+  });
+
+  const margen = useWatch({
+    control,
+    name: "margen",
+  });
+
+  const precio = useWatch({
+    control,
+    name: "precio",
+  });
 
   console.log("estos son los errores", errors);
 
@@ -97,12 +116,15 @@ export default function RegistrarActualizarProductoForm({
   const [mostrarFormularioPresentacion, setMostrarFormularioPresentacion] =
   useState(false);
 
+  const [mostrarModalPrecio, setMostrarModalPrecio] = useState(false);
+
   const [itemProdAlternativoSinAgregar, setItemProdAlternativoSinAgregar] = useState(false);
 
   const stock = watch(`stock`);
   const stockMinimo = watch("stockMinimo");
 
   const utilizaStockMinimo = watch("utilizaStockMinimo");
+
 
   
 
@@ -141,6 +163,7 @@ export default function RegistrarActualizarProductoForm({
     const fetchData = async () => {
       try {
         if (producto) {
+          console.log("🔄 CAMBIÓ PRODUCTO, CARGANDO VALORES:", producto);
           setValue("lineaId", producto.linea.id || 0);
           setSelectedLinea(producto.linea);
 
@@ -426,29 +449,38 @@ export default function RegistrarActualizarProductoForm({
                   <PriceInput
                     name="costo"
                     label="Costo"
-                    value={watch("costo") || 0}
-                    onChange={(value) => setValue("costo", value, { shouldValidate: true })}
+                    value={costo || 0}
+                    onChange={(value) =>
+                      setValue("costo", value, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      })
+                    }
                     maxDigits={9}
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
-                   <PorcentajeInput
+
+                  <PorcentajeInput
                     name="margen"
                     label="Margen"
-                    value={watch("margen") || 0}
-                    onChange={(value) => setValue("margen", value, { shouldValidate: true })}
+                    value={margen || 0}
+                    onChange={(value) =>
+                      setValue("margen", value, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      })
+                    }
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
-                  <div className="flex items-end gap-2">
-                    <div className="flex-1">
-                      <PriceInput
-                        name="precio"
-                        label="Precio"
-                        value={watch("precio") || 0}
-                        onChange={() => {}}
-                        maxDigits={9}
-                        disabled={true}
-                      />
-                    </div>
+
+                  <PriceInput
+                    name="precio"
+                    label="Precio"
+                    value={precio || 0}
+                    onChange={() => {}}
+                    maxDigits={9}
+                    disabled={true}
+                  />
 
                     
                   </div>
@@ -493,6 +525,13 @@ export default function RegistrarActualizarProductoForm({
                       onChange={(value) => setValue(`stockMinimo`, Number(value))}
                       disabled={utilizaStockMinimo ? false : true}
                     />
+
+                    <Button
+                        type="button"
+                        onClick={() => setMostrarModalPrecio(true)}
+                      >
+                        Actualización de Precio
+                      </Button>
                   </div>
 
                   
@@ -503,7 +542,7 @@ export default function RegistrarActualizarProductoForm({
               
                   </div>
                 </div>
-              </div>
+        
 
               <div className="flex flex-col w-full gap-2">
 
@@ -631,6 +670,35 @@ export default function RegistrarActualizarProductoForm({
               setMostrarFormularioPresentacion(false);
 
               await handleBuscarPorDenominacion("PRESENTACION");
+
+              onSuccess(mensaje);
+            }}
+          />
+        )}
+
+        {mostrarModalPrecio && producto && (
+          <ActualizarPrecioModal
+            producto={producto}
+            onClose={() => setMostrarModalPrecio(false)}
+            onSuccess={(mensaje, datos) => {
+              console.log("DATOS RECIBIDOS:", datos);
+
+              setValue("costo", datos.costo, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+
+              setValue("margen", datos.margen, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+
+              setValue("precio", datos.precio, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+
+              setMostrarModalPrecio(false);
 
               onSuccess(mensaje);
             }}
