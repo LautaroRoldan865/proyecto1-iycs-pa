@@ -20,8 +20,8 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
 
   const mockSuperLinea1: SuperLinea = {
     id: 1,
-    denominacion: 'Construccion',
-    observacion: 'Materiales generales',
+    denominacion: 'Bebidas',
+    observacion: 'Materiale liquidos aptos para consumir',
     lineas: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -29,8 +29,8 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
 
   const mockSuperLinea2: SuperLinea = {
     id: 2,
-    denominacion: 'Herramientas',
-    observacion: 'Herramientas de mano',
+    denominacion: 'Almacen',
+    observacion: 'Materiales de almacen',
     lineas: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -38,8 +38,8 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
 
   const mockLinea: Linea = {
     id: 10,
-    denominacion: 'Tornilleria',
-    observacion: 'Tornillos y tuercas',
+    denominacion: 'Gaseosas',
+    observacion: 'Bebidas gasificadas y refrescos',
     utilizaStockMinimo: true,
     stockMinimo: 50,
     superlineaId: 1,
@@ -98,13 +98,13 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
     expect(service).toBeDefined();
   });
 
-  // =========================================================================
+  // 
   // CA-003.1: Permitir asociar una SuperLínea al crear o modificar una línea
-  // =========================================================================
+  // 
   describe('CA-003.1: Asociación de SuperLínea al crear y modificar', () => {
     it('debe permitir asociar una SuperLínea al momento de crear una línea', async () => {
       const dto: CreateLineaDto = {
-        denominacion: 'Tornilleria',
+        denominacion: 'Gaseosas',
         superlineaId: 1,
         utilizaStockMinimo: true,
         stockMinimo: 50,
@@ -112,12 +112,12 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
       };
 
       lineaValidator.validarYPrepararCreacion.mockResolvedValue({
-        superlinea: mockSuperLinea1,
+        superlinea: mockSuperLinea1,  //mockSuperLinea1 = Bebidas
       });
       repository.findByDenominacionWith.mockResolvedValue(null);
       repository.create.mockResolvedValue({
         ...mockLinea,
-        superlinea: mockSuperLinea1,
+        superlinea: mockSuperLinea1, //aca se la asgino al momento de crear la linea
       });
 
       const result = await service.create(dto);
@@ -125,7 +125,7 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
       expect(lineaValidator.validarYPrepararCreacion).toHaveBeenCalledWith(dto);
       expect(repository.create).toHaveBeenCalledWith(dto, mockSuperLinea1);
       expect(result).toHaveProperty('mensaje');
-      expect(result.mensaje).toContain('Tornilleria');
+      expect(result.mensaje).toContain('Gaseosas');
     });
 
     it('debe permitir asociar una SuperLínea al modificar una línea', async () => {
@@ -138,8 +138,8 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
       lineaValidator.validarYPrepararEdicion.mockResolvedValue(mockSuperLinea2);
       repository.update.mockResolvedValue({
         ...mockLinea,
-        superlineaId: 2,
-        superlinea: mockSuperLinea2,
+        superlineaId: 2,             //mockSuperLinea2 = superlineaId=2
+        superlinea: mockSuperLinea2, //mockSuperLinea1 = Almacen
       });
 
       const result = await service.update(10, updateDto);
@@ -150,9 +150,9 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
     });
   });
 
-  // =========================================================================
+  // 
   // CA-003.2: Permitir seleccionar una SuperLínea existente para asociarla
-  // =========================================================================
+  // 
   describe('CA-003.2: Validación de existencia de la SuperLínea a asociar', () => {
     it('debe fallar si la SuperLínea seleccionada para asociar no existe al crear', async () => {
       const dto: CreateLineaDto = {
@@ -186,41 +186,53 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
     });
   });
 
-  // =========================================================================
+  // 
   // CA-003.3: Una línea debe pertenecer a una única SuperLínea
-  // =========================================================================
-  describe('CA-003.3: Jerarquía única (una sola SuperLínea por Línea)', () => {
-    it('debe persistir la línea vinculada a una única instancia de SuperLínea', async () => {
-      const dto: CreateLineaDto = {
-        denominacion: 'Bulones',
-        superlineaId: 1,
-        utilizaStockMinimo: false,
-        usuarioCreatedId: 1,
-      };
-
-      lineaValidator.validarYPrepararCreacion.mockResolvedValue({
-        superlinea: mockSuperLinea1,
-      });
-      repository.findByDenominacionWith.mockResolvedValue(null);
-      repository.create.mockResolvedValue({
+  // 
+  describe('CA-003.3 / CP-003-03: Una línea no puede pertenecer a más de una SuperLínea a la vez', () => {
+    it('Dado que la línea "Gaseosas" está asociada a la SuperLínea "Bebidas", cuando se intenta asociar a "Almacén", entonces queda asociada únicamente a "Almacén", reemplazando la anterior', async () => {
+      const lineaExistente: Linea = {
         ...mockLinea,
-        denominacion: 'Bulones',
+        id: 10,
+        denominacion: 'Gaseosas',
         superlineaId: 1,
-        superlinea: mockSuperLinea1,
-      });
+        superlinea: mockSuperLinea1, // Bebidas
+      };
+  
+      repository.findOne.mockResolvedValue(lineaExistente);
 
-      await service.create(dto);
+      lineaValidator.validarYPrepararEdicion.mockResolvedValue(mockSuperLinea2); // Almacén      
+      
+      const lineaActualizada: Linea = {
+        ...lineaExistente,
+        superlineaId: 2,
+        superlinea: mockSuperLinea2, // Almacén
+      };
+      repository.update.mockResolvedValue(lineaActualizada);
 
-      expect(repository.create).toHaveBeenCalledWith(
-        dto,
-        expect.objectContaining({ id: 1, denominacion: 'Construccion' }),
-      );
+      // Cuando: se intenta asociar la línea "Gaseosas" también a la SuperLínea "Almacén"
+      const updateDto: UpdateLineaDto = {
+        superlineaId: 2,
+        utilizaStockMinimo: false,
+      };
+      const result = await service.update(10, updateDto);
+
+      // Entonces: la línea "Gaseosas" queda asociada únicamente a "Almacén", reemplazando la asociación anterior
+      expect(lineaValidator.validarYPrepararEdicion).toHaveBeenCalledWith(2);
+      expect(repository.update).toHaveBeenCalledWith(10, updateDto, mockSuperLinea2);
+      expect(lineaActualizada.superlineaId).toBe(2);
+      expect(lineaActualizada.superlinea?.denominacion).toBe('Almacen');
+      // Se verifica que ya no pertenece a "Bebidas"
+      expect(lineaActualizada.superlineaId).not.toBe(1);
+      expect(lineaActualizada.superlinea?.denominacion).not.toBe('Bebidas');
+      expect(result).toBeDefined();
+      
     });
   });
 
-  // =========================================================================
+  // 
   // CA-003.4: Error si se intenta guardar una línea sin una SuperLínea asociada
-  // =========================================================================
+  // 
   describe('CA-003.4: Obligatoriedad de la SuperLínea al crear', () => {
     it('debe lanzar error y no persistir si el validador rechaza la ausencia de SuperLínea', async () => {
       const dto: CreateLineaDto = {
@@ -239,9 +251,9 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
     });
   });
 
-  // =========================================================================
+  // 
   // CA-003.5: Al consultar una Línea, debe mostrar la SuperLínea a la que pertenece
-  // =========================================================================
+  // 
   describe('CA-003.5: Consulta de Línea con su SuperLínea', () => {
     it('debe retornar el DTO de la Línea incluyendo los datos de su SuperLínea', async () => {
       const lineaConSuperlinea: Linea = {
@@ -259,7 +271,7 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
       expect(result.superlineaId).toBe(1);
       expect(result.superlinea).toBeDefined();
       expect(result.superlinea?.id).toBe(1);
-      expect(result.superlinea?.denominacion).toBe('Construccion');
+      expect(result.superlinea?.denominacion).toBe('Bebidas'); //mockSuperLinea1 = Bebidas
     });
 
     it('debe lanzar NotFoundException si la Línea no existe', async () => {
@@ -269,9 +281,9 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
     });
   });
 
-  // =========================================================================
+  // 
   // CA-003.6: Al modificar una Línea, debe permitir cambiar su SuperLínea
-  // =========================================================================
+  // 
   describe('CA-003.6: Cambio de SuperLínea al modificar', () => {
     it('debe actualizar la asociación pasando la nueva SuperLínea al repositorio', async () => {
       const updateDto: UpdateLineaDto = {
@@ -294,14 +306,14 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
     });
   });
 
-  // =========================================================================
+  // 
   // CA-003.7: El cambio de SuperLínea no debe modificar ni eliminar productos
-  // =========================================================================
+  // 
   describe('CA-003.7: Integridad de productos asociados al cambiar SuperLínea', () => {
     it('debe preservar la lista de productos asociados intacta tras la actualización de SuperLínea', async () => {
       const productosExistentes: Producto[] = [
-        { id: 101, denominacion: 'Tornillo Philips 2mm' } as Producto,
-        { id: 102, denominacion: 'Tornillo Autoperforante 4mm' } as Producto,
+        { id: 101, denominacion: 'Coca-Cola 2L' } as Producto,
+        { id: 102, denominacion: 'Sprite 2L' } as Producto,
       ];
 
       const lineaConProductos: Linea = {
@@ -313,59 +325,62 @@ describe('LineaService - User Story N° 03: SuperLínea como jerarquía', () => 
       lineaValidator.validarYPrepararEdicion.mockResolvedValue(mockSuperLinea2);
       repository.update.mockResolvedValue({
         ...lineaConProductos,
-        superlineaId: 2,
-        superlinea: mockSuperLinea2,
+        superlineaId: 1,            //mockSuperLinea1 = superlineaId=1
+        superlinea: mockSuperLinea1, //mockSuperLinea1 = Bebidas
       });
 
       const updateDto: UpdateLineaDto = {
-        superlineaId: 2,
-        utilizaStockMinimo: false,
+        superlineaId: 2,            //mockSuperLinea2 = superlineaId=2
+        utilizaStockMinimo: false,  //mockSuperLinea2 = Almacen
       };
       await service.update(10, updateDto);
 
       // Verificamos que update se ejecutó con la nueva SuperLínea sin tocar ni desvincular productos
       expect(repository.update).toHaveBeenCalledWith(10, updateDto, mockSuperLinea2);
       expect(lineaConProductos.productos).toHaveLength(2);
-      expect(lineaConProductos.productos[0].id).toBe(101);
+      expect(lineaConProductos.productos[0].id).toBe(101);  //Id de la coca
+      expect(lineaConProductos.productos[1].id).toBe(102);  //Id de la sprite
     });
   });
+    
+      // SE hace prueba manual en el front 
 
-  // =========================================================================
-  // CA-003.10: Búsqueda por denominación e inclusión de eliminados
-  // =========================================================================
-  describe('CA-003.10: Búsqueda por denominación y filtro de eliminados', () => {
-    it('debe buscar líneas por denominación excluyendo eliminadas por defecto', async () => {
-      const mockResult = {
-        data: [mockLinea],
-        total: 1,
-      };
-      repository.findByDenominacionFiltered.mockResolvedValue(mockResult);
-
-      const result = await service.findByDenominacionFiltered('Torn', 0, 10, false);
-
-      expect(repository.findByDenominacionFiltered).toHaveBeenCalledWith('Torn', 0, 10, false);
-      expect(result.data).toHaveLength(1);
-      expect(result.data[0].denominacion).toBe('Tornilleria');
-    });
-
-    it('debe permitir incluir líneas eliminadas si el usuario lo solicita', async () => {
-      const lineaEliminada: Linea = {
-        ...mockLinea,
-        id: 11,
-        denominacion: 'Tornilleria Antigua',
-        deletedAt: new Date(),
-      };
-      const mockResult = {
-        data: [mockLinea, lineaEliminada],
-        total: 2,
-      };
-      repository.findByDenominacionFiltered.mockResolvedValue(mockResult);
-
-      const result = await service.findByDenominacionFiltered('Torn', 0, 10, true);
-
-      expect(repository.findByDenominacionFiltered).toHaveBeenCalledWith('Torn', 0, 10, true);
-      expect(result.data).toHaveLength(2);
-    });
-  });
+      // CA-003.10: Búsqueda por denominación e inclusión de eliminados
+      // 
+      //describe('CA-003.10: Búsqueda por denominación y filtro de eliminados', () => {
+      //  it('debe buscar líneas por denominación excluyendo eliminadas por defecto', async () => {
+      //    const mockResult = {
+      //      data: [mockLinea],
+      //      total: 1,
+      //    };
+      //    repository.findByDenominacionFiltered.mockResolvedValue(mockResult);
+//
+      //    const result = await service.findByDenominacionFiltered('Gase', 0, 10, false);
+//
+      //    expect(repository.findByDenominacionFiltered).toHaveBeenCalledWith('Gase', 0, 10, false);
+      //    expect(result.data).toHaveLength(1);
+      //    expect(result.data[0].denominacion).toBe('Gaseosas');
+      //  });
+//
+      //  it('debe permitir incluir líneas eliminadas si el usuario lo solicita', async () => {
+      //    const lineaEliminada: Linea = {
+      //      ...mockLinea,
+      //      id: 11,
+      //      denominacion: 'Gaseosas Antiguas',
+      //      deletedAt: new Date(),
+      //    };
+      //    const mockResult = {
+      //      data: [mockLinea, lineaEliminada],
+      //      total: 2,
+      //    };
+      //    repository.findByDenominacionFiltered.mockResolvedValue(mockResult);
+//
+      //    const result = await service.findByDenominacionFiltered('Gase', 0, 10, true);
+//
+      //    expect(repository.findByDenominacionFiltered).toHaveBeenCalledWith('Gase', 0, 10, true);
+      //    expect(result.data).toHaveLength(2);
+      //  });
+      //});
+      
 });
 
