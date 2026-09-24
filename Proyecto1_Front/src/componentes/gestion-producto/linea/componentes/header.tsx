@@ -32,13 +32,7 @@ export const Header = ({
       </div>
 
       <div className="flex items-center gap-2">
-        <ImpresionForm
-          entityName="Líneas"
-          onImprimirTodo={handleImprimirTodo}
-          onImprimirPagina={handleImprimirPagina}
-          totalItems={entidadesTotales}
-          currentPage={paginaActual}
-        />
+      
         <Button
           className="bg-blue-500 hover:bg-blue-700 text-white flex items-center gap-1.5 px-3 py-2 rounded-lg shadow-sm"
           onClick={openModal}
