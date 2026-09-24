@@ -24,6 +24,8 @@ import { HistorialPrecio } from './historial-precio.entity';
 import { PrecioInvalidoException } from '../exceptions/precio-invalido.exception';
 import { ProductoCalculoHelper } from '../helpers/producto-calculos.helper';
 import { redondearProducto } from 'src/modules/common/utils/number/redondeo';
+import { Precio } from '../value-objects/previo.vo';
+import { PrecioTransformer } from '../../infraestructure/persistence/precio.transformer';
 
 
 @Entity('producto')
@@ -190,16 +192,15 @@ export class Producto {
   @OneToMany(()=> HistorialPrecio, (histPrecio)=> histPrecio.producto)
   historialPrecios: HistorialPrecio[]
 
-  get precio(){
-    return ProductoCalculoHelper.calcularPrecio(this.costo,this.margen)
-  }
+  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: PrecioTransformer })
+  precio: Precio
 
   actualizarPrecioconHistorial(nuevoPrecio:number, motivo: string, usuarioId?: number){
     if(nuevoPrecio <= 0){
-      throw new PrecioInvalidoException(this.id, this.denominacion, this.precio, nuevoPrecio)
+      throw new PrecioInvalidoException(this.id, this.denominacion, this.precio.getValue(), nuevoPrecio)
     }
 
-    const precioAnterior = this.precio
+    const precioAnterior = this.precio.getValue()
     this.costo = ProductoCalculoHelper.calcularNuevoCosto(nuevoPrecio,this.margen)
     this.fechaCosto = new Date()
 
@@ -207,7 +208,35 @@ export class Producto {
 
     this.usuarioUpdated = {id: usuarioId} as Usuario
     this.updatedAt = new Date()
+    this.precio = Precio.crear(nuevoPrecio);
 
     return historial
+  }
+
+  actualizarCosto(nuevoCosto:number, usuarioId?: number){
+    this.costo = nuevoCosto;
+    this.updatedAt = new Date();
+    this.usuarioUpdated = {id: usuarioId} as Usuario
+    this.recalcularPrecio()
+  }
+
+  actualizarMargen(nuevoMargen:number, usuarioId?: number){
+    this.margen = nuevoMargen;
+    this.updatedAt = new Date();
+    this.usuarioUpdated = {id: usuarioId} as Usuario
+    this.recalcularPrecio()
+  }
+
+  private recalcularPrecio(): void {
+    const nuevoPrecio = ProductoCalculoHelper.calcularPrecio( this.costo, this.margen,);
+    this.precio = Precio.crear(nuevoPrecio);
+  }
+
+  actualizarCostoYMargen( nuevoCosto: number, nuevoMargen: number, usuarioId?: number) {
+    this.costo = nuevoCosto;
+    this.margen = nuevoMargen;
+    this.updatedAt = new Date();
+    this.usuarioUpdated = { id: usuarioId } as Usuario;
+    this.recalcularPrecio();
   }
 }
