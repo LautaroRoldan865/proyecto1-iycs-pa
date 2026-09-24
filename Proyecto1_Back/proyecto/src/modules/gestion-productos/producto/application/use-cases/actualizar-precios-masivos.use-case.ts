@@ -31,7 +31,7 @@ export class ActualizarPreciosMasivosUseCase {
 
       const precioAnterior = producto.precio;
 
-      const nuevoPrecio = ProductoCalculoHelper.calcularNuevoPrecio( precioAnterior, dto.tipoAjuste, dto.valor );
+      const nuevoPrecio = ProductoCalculoHelper.calcularNuevoPrecio( precioAnterior.getValue(), dto.tipoAjuste, dto.valor );
 
       try {
 

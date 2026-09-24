@@ -7,6 +7,7 @@ import {
   PayloadActualizacionMasiva,
   ProductoBusqueda,
   RespuestaActualizacionMasiva,
+  RespuestaActualizacionMasivaCruda,
 } from "../interfaces/actualizacion-masiva.types";
 
 const ActualizacionMasivaService = {
@@ -27,18 +28,32 @@ const ActualizacionMasivaService = {
     payload: PayloadActualizacionMasiva,
     usuarioId: number,
   ): Promise<RespuestaActualizacionMasiva> => {
-    const respuesta = await ApiService.patch(
-      `/producto/precios/actualizacion-masiva?usuarioId=${usuarioId}`,
-      payload,
-    );
+    const respuesta: (RespuestaActualizacionMasiva & RespuestaActualizacionMasivaCruda) | undefined =
+      await ApiService.patch(`/producto/precios/actualizacion-masiva?usuarioId=${usuarioId}`, payload);
 
-    // El back puede responder 200 con cuerpo vacío si falla el guardado (hace rollback y no relanza).
-    // Solo se considera aplicado si confirma cuántos productos afectó.
-    if (!respuesta || typeof respuesta.productosAfectados !== "number") {
+    // Forma esperada originalmente: { message, productosAfectados }.
+    if (respuesta && typeof respuesta.productosAfectados === "number") {
+      return respuesta;
+    }
+
+    // Forma real que devuelve hoy el back (ActualizarPreciosMasivosUseCase.ejecutar):
+    // { productos, historiales }, sin message ni productosAfectados. Se deriva la
+    // confirmación de la cantidad de historiales (o productos) devueltos.
+    const cantidad = Array.isArray(respuesta?.historiales)
+      ? respuesta.historiales.length
+      : Array.isArray(respuesta?.productos)
+        ? respuesta.productos.length
+        : null;
+
+    if (cantidad === null) {
+      // El back puede responder 200 con cuerpo vacío si falla el guardado (hace rollback y no relanza).
       throw new Error("El servidor no confirmó la actualización. Los precios no se modificaron.");
     }
 
-    return respuesta;
+    return {
+      message: "Actualización masiva de precios realizada con éxito.",
+      productosAfectados: cantidad,
+    };
   },
 };
 

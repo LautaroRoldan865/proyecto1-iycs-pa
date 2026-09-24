@@ -16,6 +16,8 @@ import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
 import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
 import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
+import { ProductoCalculoHelper } from '../../domain/helpers/producto-calculos.helper';
+import { Precio } from '../../domain/value-objects/previo.vo';
 
 
 @Injectable()
@@ -51,12 +53,12 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       this.logger.debug('Marca:', marca);
       this.logger.debug('Presentacion:', presentacion);
       this.logger.debug('Usuario:', usuario);
-
       const nuevaEntity = repo.create({
         ...data,
         linea,
         marca,
         presentacion,
+        precio: Precio.crear(ProductoCalculoHelper.calcularPrecio(data.costo, data.margen)),
         usuarioCreated: usuario,
       });
 
@@ -177,7 +179,8 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
         throw new NotFoundException(`EL prodcuto con ID ${id} no encontrada`);
       }
       const {
-
+        costo,
+        margen,
         ...dataSinItems
       } = data;
 
@@ -186,6 +189,24 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
         marca,
         presentacion
       });
+
+      if (costo !== undefined && margen !== undefined) {
+        entity.actualizarCostoYMargen(
+          costo,
+          margen,
+          usuario.id,
+        );
+      } else if (costo !== undefined) {
+        entity.actualizarCosto(
+          costo,
+          usuario.id,
+        );
+      } else if (margen !== undefined) {
+        entity.actualizarMargen(
+          margen,
+          usuario.id,
+        );
+      }
 
       entity.usuarioUpdated = usuario; 
       const entityActualizada = await repo.save(entity);

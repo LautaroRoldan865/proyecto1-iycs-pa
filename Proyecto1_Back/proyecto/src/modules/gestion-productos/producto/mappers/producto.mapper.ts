@@ -15,7 +15,7 @@ export class ProductoMapper {
   private static readonly logger = new Logger(ProductoMapper.name);
 
   static toBusquedaDto(entity: Producto): GetProductoDto {
-    const precio = entity.costo + (entity.costo *(entity.margen/100));
+    const precio = entity.precio.getValue();
     const alicuota = entity.alicuotaIva ?? 0;
 
     return {
@@ -77,7 +77,7 @@ export class ProductoMapper {
       codigoBarra: entity.codigoBarra ?? '',
       stock: entity.stock ?? 0,
       costo: entity.costo ?? 0,
-      precio: entity.costo + (entity.costo *(entity.margen/100)),
+      precio: entity.precio.getValue(),
       margen: entity.margen ?? 0,
       costoEnDolar: entity.costoEnDolar ?? false,
       costoDolar: entity.costoDolar ?? 0,

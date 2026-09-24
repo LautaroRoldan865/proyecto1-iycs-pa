@@ -13,3 +13,15 @@ export class PrecioInvalidoException extends Error {
         this.name = 'PrecioInvalidoException'
     }
 }
+
+export class PrecioInvalidoExceptionIndividual extends Error {
+    constructor(
+        public readonly precioCalculado: number
+    ){
+        super(
+            `El precio calculado es inválido ($${precioCalculado}). 
+            El precio debe ser estrictamente mayor a 0.`
+        )
+        this.name = 'PrecioInvalidoExceptionIndividual'
+    }
+}
