@@ -32,8 +32,9 @@ export class LineaRepository implements ILineaRepository {
   async update(
     id: number,
     data: UpdateLineaDto,
+    superlinea?:SuperLinea
   ): Promise<Linea> {
-    return this.persistenceService.update(id, data);
+    return this.persistenceService.update(id, data, superlinea);
   }
 
   async findByDenominacionFiltered(

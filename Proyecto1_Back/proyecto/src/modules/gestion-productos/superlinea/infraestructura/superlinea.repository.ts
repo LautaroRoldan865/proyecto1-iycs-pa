@@ -62,15 +62,20 @@ export class SuperLineaRepository implements ISuperLineaRepository{
     }
 
     async findAllFor(denominacion: string = ''): Promise<SuperLinea[]> {
-    return await this.superLineaRepository
-        .createQueryBuilder('superlinea')
-        .where('superlinea.deletedAt IS NULL')
-        .andWhere(
+    const query = this.superLineaRepository
+        .createQueryBuilder('superlinea');
+
+    if (denominacion?.trim()) {
+        query.andWhere(
             'UPPER(superlinea.denominacion) LIKE :denominacion',
             {
                 denominacion: `%${denominacion.trim().toUpperCase()}%`,
             },
-        )
+        );
+    }
+
+    return await query
+        .orderBy('superlinea.denominacion', 'ASC')
         .getMany();
     }
 
@@ -102,6 +107,7 @@ export class SuperLineaRepository implements ISuperLineaRepository{
         });
     }
 
+    
     async findByDenominationWith(denominacion: string): Promise<SuperLinea | null> {
         return await this.superLineaRepository
             .createQueryBuilder('superlinea')
@@ -111,6 +117,7 @@ export class SuperLineaRepository implements ISuperLineaRepository{
             })
             .getOne();
     }
+
 
     async findByDenominacionFiltered(
         denominacion: string,
@@ -126,8 +133,9 @@ export class SuperLineaRepository implements ISuperLineaRepository{
         const query = this.superLineaRepository
             .createQueryBuilder('superlinea');
 
-        // Si NO se quieren incluir eliminados
-        if (!incluirEliminados) {
+        if (incluirEliminados) {
+            query.withDeleted();
+        } else {
             query.andWhere('superlinea.deletedAt IS NULL');
         }
 

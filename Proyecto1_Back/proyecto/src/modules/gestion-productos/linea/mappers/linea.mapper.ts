@@ -9,13 +9,14 @@ export class LineaMapper {
   static toDto(entity: Linea): LineaDto {
     return {
       id: entity.id,
+      superlineaId: entity.superlineaId ?? entity.superlinea?.id,
+      superlinea: entity.superlinea ? toReferenciaDto(entity.superlinea) : undefined,
       denominacion: entity.denominacion,
       stockMinimo: entity.stockMinimo,
       utilizaStockMinimo: entity.utilizaStockMinimo,
       observacion: entity.observacion ?? '',
       sistema: entity.sistema,
       deletedAt: entity.deletedAt ? entity.deletedAt.toISOString() : null,
-
     };
   }
 }
