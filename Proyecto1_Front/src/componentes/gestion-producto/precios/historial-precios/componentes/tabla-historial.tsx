@@ -20,15 +20,6 @@ export default function TablaHistorial({ registros }: Props) {
         formatFunction: ({ value }) => <span>{formatFechaHora(value)}</span>,
       },
       {
-        header: "Código",
-        accessor: "codigoProveedor",
-        flex: 0.5,
-        type: "text",
-        align: "right",
-        editable: false,
-        scrollable: false,
-      },
-      {
         header: "Producto",
         accessor: "denominacion",
         flex: 1.3,
@@ -53,20 +44,6 @@ export default function TablaHistorial({ registros }: Props) {
         align: "right",
         editable: false,
         formatFunction: ({ value }) => <span className="font-semibold">{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "Diferencia",
-        accessor: "diferencia",
-        flex: 0.6,
-        type: "text",
-        align: "right",
-        editable: false,
-        formatFunction: ({ value }) => (
-          <span className={value >= 0 ? "text-green-600" : "text-red-600"}>
-            {value > 0 ? "+" : ""}
-            {formatPrice(value, "ARS")}
-          </span>
-        ),
       },
       {
         header: "Motivo",

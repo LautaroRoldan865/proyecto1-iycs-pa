@@ -66,6 +66,16 @@ export interface RespuestaActualizacionMasiva {
   productosAfectados: number;
 }
 
+/**
+ * Forma real que hoy devuelve el back (ActualizarPreciosMasivosUseCase.ejecutar):
+ * las entidades completas, no { message, productosAfectados }. Se usa solo para
+ * derivar la confirmación en el front; no se leen sus campos internos.
+ */
+export interface RespuestaActualizacionMasivaCruda {
+  productos?: unknown[];
+  historiales?: unknown[];
+}
+
 export type ResultadoOperacion =
   | { ok: true; mensaje?: string; productosAfectados?: number }
   | { ok: false; mensaje: string };
