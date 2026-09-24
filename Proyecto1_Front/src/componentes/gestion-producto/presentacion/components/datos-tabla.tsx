@@ -4,20 +4,19 @@ import {
   denominacionNotScrollColumnProps,
   observacionesColumnProps,
 } from "../../../herramientas/tablas/formateo-columnas-documentos";
-import type { Linea } from "../../../../interfaces/gestion-producto/linea/interfaces-linea";
 import { ActionButton } from "../../../herramientas/reutilizables/action-button";
 import { formatFechaHora } from "../../../herramientas/formateo-de-campos/fucion-formateo";
-import { Superlinea } from "../../../../interfaces/gestion-producto/superlinea/interfaces-superlinea";
+import { Presentacion } from "../../../../interfaces/gestion-producto/presentacion/interfaces-presentacion";
 
 interface Props {
-  superlineas: Superlinea[];
+  presentaciones: Presentacion[];
   onEditar: (id: number) => void;
   onInfo: (id: number) => void;
   onDelete: (id: number) => void;
 }
 
-export function DatosTablaSuperlinea({ superlineas, onEditar, onInfo, onDelete }: Props) {
-  const columns: Column<Linea>[] = [
+export function DatosTablaPresentacion({ presentaciones, onEditar, onInfo, onDelete }: Props) {
+  const columns: Column<Presentacion>[] = [
     {
       header: "Denominación",
       accessor: "denominacion",
@@ -43,32 +42,29 @@ export function DatosTablaSuperlinea({ superlineas, onEditar, onInfo, onDelete }
   return (
     <TablaAGGrid
       columns={columns}
-      data={superlineas}
-      getRowClass={(params: any) =>
-        params.data?.deletedAt ? "opacity-50 bg-gray-100 dark:bg-slate-800 pointer-events-none" : ""
-      }
-      actions={(row: Linea) => {
+      data={presentaciones}
+      getRowClass={(params: any) => params.data?.deletedAt ? "opacity-50 bg-gray-100 dark:bg-slate-800 pointer-events-none" : ""}
+      actions={(row: Presentacion) => {
         if (row.deletedAt) return <div className="w-full" />;
 
         return (
           <div className="flex justify-end gap-1">
-           
+            {/*<ActionButton variant="info" title="Ver información" onClick={() => onInfo(row.id)}>
+                      <Info size={16} />
+                    </ActionButton> */}
             <ActionButton variant="edit" title="Editar" onClick={() => onEditar(row.id)}>
               <Pencil size={16} />
             </ActionButton>
             <ActionButton
               variant="delete"
               title="Eliminar"
-              disabled={row.sistema}
+              disabled={Boolean(row.sistema)}
               onClick={() => onDelete(row.id)}
             >
               <Trash size={16} />
             </ActionButton>
           </div>
         );
-      }}
-      actionsFlex={0.5}
-      rowHeight={60}
-    />
+      } } actionsFlex={0}    />
   );
 }
