@@ -7,8 +7,8 @@ module.exports = {
     transform: {
       '^.+\\.ts$': 'ts-jest',
     },
-    collectCoverageFrom: ['**/*.(t|j)s'],
-    collectCoverage: true, // Opcional: Muestra cobertura de código
+    collectCoverageFrom: ['src/**/*.(t|j)s'],
+    collectCoverage: false, // Usar npm run test:cov cuando se desee cobertura
     coverageDirectory: './coverage',
     moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
