@@ -68,6 +68,7 @@ export const schema = (utilizaStockMinimo: boolean) =>
    
     stock: yup.number().optional().nullable(),
     costo: yup.number().typeError("El costo debe ser un valor númerico").required("El costo es obligatorio").min(0,"El costo debe ser mayor o igual a 0"),
+    precio: yup.number().optional(),
 
     /*precio: yup.number().typeError("El precio debe ser un valor númerico").required("El precio es obligatorio").min(0,"El costo debe ser mayor o igual a 0").test("precio-mayor-o-igual-costo","El precio debe ser mayor o igual que el costo", function(value){
       const {costo} = this.parent;

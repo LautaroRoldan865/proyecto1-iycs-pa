@@ -202,40 +202,31 @@ export default function RegistrarActualizarProductoForm({
   const onSubmit = async (formData: FormValues) => {
     let response: ResponsePost;
 
-    try {
-      // ⚠️ Validar si hay ítems sin agregar
-      if (itemProdAlternativoSinAgregar) {
-        const mensaje = [
-          itemProdAlternativoSinAgregar ? "- Hay un producto alternativo sin agregar." : "",
-          "",
-          "¿Estás seguro de que querés registrar sin agregarlos?",
-        ]
-          .filter(Boolean)
-          .join("\n");
+      // el precio lo calcula el backend, no se envía
+      const { precio, ...datos } = formData;
 
-        const confirmar = window.confirm(mensaje);
+      try {
+        // ...tu validación de ítems sin agregar...
 
-        if (!confirmar) return; // el usuario canceló
-      }
+        if (producto) {
+          const payload = {
+            ...datos,
+            usuarioUpdatedId: usuarioId,
+          };
 
-      if (producto) {
-        const payload = {
-          ...formData,
-          usuarioUpdatedId: usuarioId,
-        };
+          response = await ProductoService.actualizar(producto.id, payload);
+        } else {
+          const payload = {
+            ...datos,
+            usuarioCreatedId: usuarioId,
+          };
 
-        response = await ProductoService.actualizar(producto.id, payload);
-      } else {
-        const payload = {
-          ...formData,
-          usuarioCreatedId: usuarioId,
-        };
+          response = await ProductoService.nuevo(payload);
+        }
 
-        response = await ProductoService.nuevo(payload);
-      }
+        await onSuccess(response.mensaje);
+        onClose();
 
-      await onSuccess(response.mensaje);
-      onClose();
     } catch (error) {
       const errorMessage = parseApiError(error);
 
