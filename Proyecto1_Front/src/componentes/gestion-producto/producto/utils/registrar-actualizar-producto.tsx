@@ -157,6 +157,7 @@ export default function RegistrarActualizarProductoForm({
           setValue("stock", producto.stock || 0);
           setValue("costo", producto.costo || 0);
           setValue("margen", producto.margen || 0);
+          setValue("precio", producto.precio || 0);
           
           //setValue("oferta", producto.oferta || false);
       
@@ -442,7 +443,7 @@ export default function RegistrarActualizarProductoForm({
                       <PriceInput
                         name="precio"
                         label="Precio"
-                        value={precioCalculado}
+                        value={watch("precio") || 0}
                         onChange={() => {}}
                         maxDigits={9}
                         disabled={true}
