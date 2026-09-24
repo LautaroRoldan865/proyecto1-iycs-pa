@@ -36,6 +36,7 @@ export class LineaPersistenceAdapter
     super(repository);
   }
 
+  
   @Transactional()
   async create(data: CreateLineaDto, superlinea:SuperLinea): Promise<Linea> {
     const repo = this.uow.getRepository(Linea);
@@ -72,6 +73,7 @@ export class LineaPersistenceAdapter
   async update(
     id: number,
     data: UpdateLineaDto,
+    superlinea?:SuperLinea
   ): Promise<Linea> {
     const repo = this.uow.getRepository(Linea);
 
@@ -87,10 +89,12 @@ export class LineaPersistenceAdapter
     entity.denominacion = data.denominacion ?? entity.denominacion;
     entity.utilizaStockMinimo = data.utilizaStockMinimo;
     entity.stockMinimo = data.stockMinimo ?? 0;
-    entity.usuarioCreatedId = data.usuarioCreatedId;
-    entity.superlineaId = data.superlineaId;
+   
+    if (superlinea !== undefined) {
+      entity.superlinea = superlinea;
+      entity.superlineaId = superlinea.id;
+    }
 
-    // Guardar entidad antes de procesar sublíneas (opcional según lógica de negocio)
     const entityActualizada = await repo.save(entity);
 
     return entityActualizada;
@@ -125,7 +129,8 @@ export class LineaPersistenceAdapter
 
   async findAllListado(): Promise<Linea[]> {
     try {
-      const query = this.baseQuery();
+      const query = this.baseQuery()
+        .leftJoinAndSelect(`${this.ALIAS}.superlinea`, 'superlinea');
       QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
       return await query.getMany();
     } catch (error) {
@@ -190,6 +195,7 @@ export class LineaPersistenceAdapter
   ): Promise<{ data: Linea[]; total: number }> {
     try {
       const query = this.baseQuery(incluirEliminados)
+        .leftJoinAndSelect(`${this.ALIAS}.superlinea`, 'superlinea');
 
       if (denominacion) {
         query.andWhere(`UPPER(${this.ALIAS}.denominacion) LIKE :denominacion`, {
@@ -210,6 +216,7 @@ export class LineaPersistenceAdapter
   async findAllFor(denominacion: string): Promise<Linea[]> {
     try {
       const query = this.baseQuery()
+        .leftJoinAndSelect(`${this.ALIAS}.superlinea`, 'superlinea');
       query.andWhere('UPPER(linea.denominacion) LIKE :denominacion', {
         denominacion: `%${denominacion.toUpperCase()}%`,
       });
@@ -226,6 +233,7 @@ export class LineaPersistenceAdapter
     try {
       const query = this.repository
         .createQueryBuilder('linea')
+        .leftJoinAndSelect('linea.superlinea', 'superlinea')
         .where('linea.deletedAt IS NULL')
         .andWhere('linea.sistema = :sistema', { sistema: 0 });
       if (denominacion && denominacion.trim() !== '') {
