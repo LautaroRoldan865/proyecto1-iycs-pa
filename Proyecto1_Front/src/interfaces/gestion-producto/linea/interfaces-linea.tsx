@@ -3,6 +3,7 @@ import { SelectSuperlinea } from "../superlinea/interfaces-superlinea";
 
 export interface Linea {
   id: number;
+  superlineaId?: number;
   denominacion: string;
   observacion: string | null;
   createdAt: string | null;
@@ -10,7 +11,7 @@ export interface Linea {
   deletedAt: string | null;
   usuarioCreatedId: number;
   usuarioUpdatedId: number;
-  superlinea: SelectSuperlinea;
+  superlinea?: SelectSuperlinea;
   sublineas: SelectSublinea[];
   sistema: number;
   stockMinimo: number | null;

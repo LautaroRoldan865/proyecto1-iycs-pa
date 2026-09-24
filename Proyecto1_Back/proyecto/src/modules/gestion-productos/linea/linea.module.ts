@@ -12,7 +12,7 @@ import { LineaController } from './application/controllers/linea.controller';
 import { LineaService } from './application/services/linea.service';
 import { ProductoModule } from '../producto/producto.module';
 import { PoliticaEliminacionLinea } from './domain/services/politica-eliminacion-linea.service';
-import { LineaCreateValidator } from './application/validators/linea.validator';
+import { LineaValidator } from './application/validators/linea.validator';
 import { LineaUniquenessValidator } from './infraestructure/validators/linea-uniqueness.validator.ts';
 import { LineaRelatedEntitiesValidator } from './infraestructure/validators/linea-related-entities.validator.ts';
 import { lineaIntrinsicValidationService } from './domain/services/linea-intrinsic-validation.service.ts';
@@ -29,7 +29,7 @@ import { SuperlineaModule } from '../superlinea/superlinea.module';
   providers: [
     LineaService,
     PoliticaEliminacionLinea,
-    LineaCreateValidator,
+    LineaValidator,
     LineaUniquenessValidator,
     LineaRelatedEntitiesValidator,
     lineaIntrinsicValidationService,
