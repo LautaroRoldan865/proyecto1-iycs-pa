@@ -15,12 +15,12 @@ interface SuperlineasSelectorProps {
 
   selectedSuperlinea: SelectSuperlineaInterface | null;
 
-  superLineaId: number;
+  superlineaId: number;
 
   disabled?: boolean;
 
   errors?: {
-    superLineaId?: { message?: string };
+    superlineaId?: { message?: string };
   };
 
   onEnterDenominacion: (e: React.KeyboardEvent) => void;
@@ -38,7 +38,7 @@ export default function SuperlineasSelector({
   selectSuperlineaRef,
   superlineas,
   selectedSuperlinea,
-  superLineaId,
+  superlineaId,
   disabled = false,
   errors,
   onEnterDenominacion,
@@ -72,7 +72,7 @@ export default function SuperlineasSelector({
           <div ref={selectSuperlineaRef}>
             <Select
               value={
-                superlineas.find((l) => l.id === superLineaId) ?? selectedSuperlinea
+                superlineas.find((l) => l.id === superlineaId) ?? selectedSuperlinea
               }
               options={superlineas}
               getOptionLabel={(o) => o.denominacion}
@@ -85,9 +85,9 @@ export default function SuperlineasSelector({
               styles={selectStyles}
             />
 
-            {errors?.superLineaId?.message && (
+            {errors?.superlineaId?.message && (
               <p className="text-sm text-red-600 mt-1">
-                {errors.superLineaId.message}
+                {errors.superlineaId.message}
               </p>
             )}
           </div>

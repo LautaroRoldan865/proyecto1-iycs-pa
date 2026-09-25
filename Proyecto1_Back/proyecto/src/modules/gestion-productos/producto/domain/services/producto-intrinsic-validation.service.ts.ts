@@ -8,21 +8,22 @@ export class ProductoIntrinsicValidationService {
    */
   validarDatosBasicos(datos: {
     denominacion: string;
-    marcaId: number;
-    lineaId: number;
-    presentacionId:number;
+    marcaId?: number;
+    lineaId?: number;
+    presentacionId?: number;
     alicuotaIva?: number;
-    precioMayorista?: number;
-    precioCliente?: number;
-    precioOcasional?: number;
+    costo?: number;
+    margen?: number;
   }): void {
     this.validarDenominacion(datos.denominacion);
     this.validarIds(datos.marcaId, datos.lineaId);
-    this.validarPrecios(
+    /* No se usan por ahora
+      this.validarPrecios(
       datos.precioMayorista,
       datos.precioCliente,
       datos.precioOcasional,
-    );
+    );*/
+    this.validarCostoMargen(datos.costo, datos.margen);
     
     if (datos.alicuotaIva !== undefined) {
       this.validarAlicuotaIva(datos.alicuotaIva);
@@ -31,18 +32,23 @@ export class ProductoIntrinsicValidationService {
 
   private validarDenominacion(denominacion: string): void {
     if (!denominacion || denominacion.trim().length === 0) {
-      throw new BadRequestException('La denominación es obligatoria');
+      throw new BadRequestException('La denominación es obligatoria'); // CA-001.2
     }
-    if (denominacion.length > 200) {
+    if (denominacion.length > 255) { //CA-001.3
       throw new BadRequestException(
-        'La denominación no puede superar 200 caracteres',
+        'La denominación no puede superar 255 caracteres',
+      );
+    }
+    if (!/^[\w áéíóúÁÉÍÓÚñÑ.\-/%]+$/.test(denominacion)) { //CA-001.3
+      throw new BadRequestException(
+        'La denominación contiene caracteres no permitidos.',
       );
     }
   }
 
   private validarIds(
-    marcaId: number,
-    lineaId: number,
+    marcaId?: number,
+    lineaId?: number,
   ): void {
     if (!marcaId || marcaId <= 0) {
       throw new BadRequestException('Marca ID es requerido y debe ser válido');
@@ -55,7 +61,8 @@ export class ProductoIntrinsicValidationService {
 
   /**
    * Valida la jerarquía de precios: Mayorista <= Cliente <= Ocasional
-   */
+    No se usa por ahora
+  
   private validarPrecios(
     precioMayorista?: number,
     precioCliente?: number,
@@ -98,6 +105,14 @@ export class ProductoIntrinsicValidationService {
           'El precio Mayorista no puede superar el precio Ocasional',
         );
       }
+    }
+  } */
+  private validarCostoMargen(costo?: number, margen?: number): void {
+    if (costo !== undefined && costo < 0) {
+      throw new BadRequestException('El costo no puede ser negativo');
+    }
+    if (margen !== undefined && margen < 0) {
+      throw new BadRequestException('El margen no puede ser negativo');
     }
   }
 

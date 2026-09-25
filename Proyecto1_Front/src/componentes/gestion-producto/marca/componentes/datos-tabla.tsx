@@ -52,9 +52,9 @@ export function DatosTabla({ marcas, onEditar, onInfo, onDelete }: Props) {
 
         return (
           <div className="flex justify-end gap-1">
-            <ActionButton variant="info" title="Ver información" onClick={() => onInfo(row.id)}>
+            {/*<ActionButton variant="info" title="Ver información" onClick={() => onInfo(row.id)}>
               <Info size={16} />
-            </ActionButton>
+            </ActionButton>*/}
             <ActionButton variant="edit" title="Editar" onClick={() => onEditar(row.id)}>
               <Pencil size={16} />
             </ActionButton>

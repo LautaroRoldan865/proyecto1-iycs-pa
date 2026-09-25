@@ -14,6 +14,16 @@ export class LineaDto {
   @IsInt()
   id: number;
 
+  @ApiProperty({ example: 12, description: 'ID de la superlínea asociada', required: false, nullable: true })
+  @Type(() => Number)
+  @IsOptional()
+  @IsInt()
+  superlineaId?: number;
+
+  @ApiProperty({ description: 'Datos de la superlínea asociada', required: false, nullable: true })
+  @IsOptional()
+  superlinea?: any;
+
   @ApiProperty({
     example: 'tornillos',
     description: 'Denominación o nombre dela linea',

@@ -16,6 +16,7 @@ export interface FormValues {
   stock?: number | null;
   costo?: number | null;
   margen?: number | null;
+  precio?:number | null;
   /* costoEnDolar?: boolean | null;
   costoDolar?: number | null;
   destacado?: boolean | null;
@@ -46,6 +47,11 @@ export interface ItemsProveedorEnPayload {
   proveedorId: number;
   usuarioCreatedId: number;
 }
+//verifica de los ids de los campos
+const vacioAUndefined = (value: unknown, originalValue: unknown) =>
+  originalValue === "" || originalValue === null || Number.isNaN(value)
+    ? undefined
+    : value;
 
 //===================== schema de validacion ============================================//
 
@@ -57,16 +63,30 @@ export const schema = (utilizaStockMinimo: boolean) =>
       .lowercase()
       .required("La denominación es obligatoria.")
       .max(255, "Máximo 255 caracteres.")
-      .matches(/^[A-Za-z0-9 %-_"'áéíóúÁÉÍÓÚñÑ./]+$/, "Solo se permiten letras, números y espacios."),
+      .matches(/^[\w áéíóúÁÉÍÓÚñÑ.\-/%]+$/, "Solo se permiten letras, números y espacios."),
     observacion: yup.string().optional().nullable(),
    
     stock: yup.number().optional().nullable(),
     costo: yup.number().typeError("El costo debe ser un valor númerico").required("El costo es obligatorio").min(0,"El costo debe ser mayor o igual a 0"),
+    precio: yup.number().optional(),
+
+    /*precio: yup.number().typeError("El precio debe ser un valor númerico").required("El precio es obligatorio").min(0,"El costo debe ser mayor o igual a 0").test("precio-mayor-o-igual-costo","El precio debe ser mayor o igual que el costo", function(value){
+      const {costo} = this.parent;
+      if (value==null || costo == null ) return true;
+      return value>= costo;
+    }),*/
+
     margen: yup.number().typeError("El margen debe ser un valor númerico").min(0,"El margen mínimo debe ser mayor o igual a 0").max(999, "El margen máximo permitido es de 999").optional().nullable(),
+
+    lineaId: yup.number().transform(vacioAUndefined).typeError("La línea es obligatoria.").required("La línea es obligatoria.").min(1, "La línea es obligatoria."),
+    
+    marcaId: yup.number().transform(vacioAUndefined).typeError("La marca es obligatoria.").required("La marca es obligatoria.").min(1, "La marca es obligatoria."),
+
+    presentacionId: yup.number().transform(vacioAUndefined).typeError("La presentación es obligatoria.").required("La presentación es obligatoria.").min(1, "La presentación es obligatoria."),
     /* costoEnDolar: yup.boolean().optional().nullable(),
     costoDolar: yup.number().optional().nullable(),
     destacado: yup.boolean().optional().nullable(),
-    envioGratis: yup.boolean().optional().nullable(), */
+    envioGratis: yup.boolean().optional().nullable(), /*
     marcaId: yup
       .number()
       .typeError("La linea es obligatoria.")
@@ -162,7 +182,9 @@ export const transformData = (producto: Producto): FormValues => {
     codigoBarra: producto.codigoBarra ?? null,*/
     stock: producto.stock ?? null,
     costo: producto.costo ?? null,
+    //precio: producto.precio ?? null,
     margen: producto.margen ?? null,
+
    // oferta: producto.oferta ?? null,
     /* costoEnDolar: producto.costoEnDolar ?? null,
     costoDolar: producto.costoDolar ?? null,

@@ -1,10 +1,9 @@
-// domain/services/producto-intrinsic-validation.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class lineaIntrinsicValidationService {
   /**
-   * Valida todos los datos intrínsecos del producto
+   * Valida todos los datos intrínsecos de la linea
    */
   validarDatosBasicos(datos: {
     denominacion: string;
@@ -31,7 +30,7 @@ export class lineaIntrinsicValidationService {
   ): void {
 
     if (!superlineaId || superlineaId <= 0) {
-      throw new BadRequestException('Línea ID es requerido y debe ser válido');
+      throw new BadRequestException('Superlínea ID es requerido y debe ser válido');
     }
 
   }

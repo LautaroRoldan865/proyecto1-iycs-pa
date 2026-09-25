@@ -16,6 +16,8 @@ import { UpdateProductoDto } from '../../dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
 import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
 import { HistorialPrecio } from '../../domain/entities/historial-precio.entity';
+import { ProductoCalculoHelper } from '../../domain/helpers/producto-calculos.helper';
+import { Precio } from '../../domain/value-objects/previo.vo';
 
 
 @Injectable()
@@ -51,12 +53,12 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       this.logger.debug('Marca:', marca);
       this.logger.debug('Presentacion:', presentacion);
       this.logger.debug('Usuario:', usuario);
-
       const nuevaEntity = repo.create({
         ...data,
         linea,
         marca,
         presentacion,
+        precio: Precio.crear(ProductoCalculoHelper.calcularPrecio(data.costo, data.margen)),
         usuarioCreated: usuario,
       });
 
@@ -172,12 +174,15 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
     const repo = this.uow.getRepository(Producto);
     try {
       const entity = await this.findOne(id);
+      let historial: HistorialPrecio | undefined;
 
       if (!entity) {
         throw new NotFoundException(`EL prodcuto con ID ${id} no encontrada`);
       }
       const {
-
+        costo,
+        margen,
+        motivo,
         ...dataSinItems
       } = data;
 
@@ -187,9 +192,34 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
         presentacion
       });
 
+      if (costo !== undefined && margen !== undefined) {
+        historial = entity.actualizarCostoYMargen(
+          costo,
+          margen,
+          motivo || 'Actualización de costo y margen',
+          usuario.id,
+        );
+      } else if (costo !== undefined) {
+        historial = entity.actualizarCosto(
+          costo,
+          motivo || 'Actualización de costo',
+          usuario.id,
+        );
+      } else if (margen !== undefined) {
+        historial = entity.actualizarMargen(
+          margen,
+          motivo || 'Actualización de margen',
+          usuario.id,
+        );
+      }
+
       entity.usuarioUpdated = usuario; 
       const entityActualizada = await repo.save(entity);
 
+      if(historial){
+        const repoHistorial = this.uow.getRepository(HistorialPrecio)
+        await repoHistorial.save(historial);
+      }
 
       return entityActualizada;
     } catch (error) {

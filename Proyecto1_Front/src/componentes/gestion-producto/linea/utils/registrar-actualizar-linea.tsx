@@ -6,7 +6,7 @@ import { Button } from "../../../ui/Button";
 import FormInput from "../../../herramientas/formateo-de-campos/form-input";
 import React from "react";
 import { Card } from "../../../ui/Card";
-import { FormValues, schema, transformData, SublineasEnPayload, transformarSublineas } from "../interfaces/interfaces-validaciones-linea";
+import { FormValues, schema, transformData, SublineasEnPayload} from "../interfaces/interfaces-validaciones-linea";
 import LineaService from "../services/linea-service";
 import { Linea } from "../../../../interfaces/gestion-producto/linea/interfaces-linea";
 
@@ -21,13 +21,14 @@ import {
   TituloAlertaConfirmacion,
   useConfirmation,
 } from "../../../herramientas/alertas/alertas-confirmacion";
-import SelectSuperlinea from "../componentes/select-superlinea";
+
 import SuperlineasSelector from "../../producto/componentes/configuracion/superlineas-selector";
 import { SelectSuperlineaInterface } from "../../../../interfaces/gestion-producto/superlinea/interfaces-superlinea";
 import ProductoService from "../../producto/services/producto-service";
 import { useEnterFocus } from "../../../herramientas/formateo-de-campos/movimiento-campos";
 import SuperLineaService from "../../producto/services/superlinea-service";
 import RegistrarActualizarSuperLineaForm from "./registrar-actualizar-superlinea";
+
 
 export default function RegistrarActualizarLineaForm({
   linea,
@@ -56,8 +57,8 @@ export default function RegistrarActualizarLineaForm({
   } = methods;
 
   const [denominacionSuperlinea, setDenominacionSuperlinea] = useState(" ");
-  const [selectedSuperlinea, setSelectedSuperlinea] = React.useState<SelectSuperlineaInterface>();
-  const [superlineaSeleccionada, setSuperlineaSeleccionada] = useState<Linea>({} as Linea);
+  const [selectedSuperlinea, setSelectedSuperlinea] = React.useState<SelectSuperlineaInterface| null>(null);
+  const [superlineaSeleccionada, setSuperlineaSeleccionada] = useState<SelectSuperlineaInterface | null>(null);
 
   const [mostrarFormularioSuperlinea, setMostrarFormularioSuperlinea] = useState(false);
   const [superlineas, setSuperlineas] = React.useState<SelectSuperlineaInterface[]>([]);
@@ -81,14 +82,13 @@ export default function RegistrarActualizarLineaForm({
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
+      try {        
         if (linea) {
           setValue("denominacion", linea.denominacion || "");
           setValue("observacion", linea.observacion || null);
          
-          setValue("superLineaId", linea.superlinea?.id || 0);
-          setSelectedSuperlinea(linea.superlinea);
-          
+          setValue("superlineaId", linea.superlinea?.id || 0);
+          setSelectedSuperlinea(linea.superlinea || null);
         }
       } catch (error) {
         console.error("Error al obtener los datos:", error);
@@ -100,7 +100,6 @@ export default function RegistrarActualizarLineaForm({
   const onSubmit = async (formData: FormValues) => {
     let response: ResponsePost;
     try {
-     
 
       if (linea) {
         const payload = { ...formData, usuarioUpdatedId: usuarioId };
@@ -160,8 +159,6 @@ export default function RegistrarActualizarLineaForm({
     };
 
   
-
-  
   const handleOnClose = async () => {
     const confirmed = await showConfirmation({
       type: TipoAlertaConfirmacion.DEFAULT,
@@ -173,6 +170,8 @@ export default function RegistrarActualizarLineaForm({
     });
     if (confirmed) onClose();
   };
+
+  const superlineaId = watch("superlineaId");
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 overflow-y-auto py-5">
@@ -222,14 +221,15 @@ export default function RegistrarActualizarLineaForm({
                     selectSuperlineaRef={selectSuperlineaRef}
                     superlineas={superlineas}
                     selectedSuperlinea={selectedSuperlinea}
-                    superLineaId={watch("superLineaId")}
+                    superLineaId={watch("superlineaId")}
                  
                     errors={errors}
                     onEnterSuperlinea={(e) => handleEnterEnSelect(e, "SUPERLINEA")}
                     onEnterDenominacion={enterToDenominacionSuperlinea}
                     onSuperlineaChange={(superlinea) => {
-                      methods.setValue("superLineaId", superlinea?.id || 0);
-                      setSuperlineaSeleccionada(superlinea as any);
+                      methods.setValue("superlineaId", superlinea?.id || 0);
+                      setSuperlineaSeleccionada(superlinea);
+                      setSelectedSuperlinea(superlinea);
                     }}
                     onAgregarSuperlinea={() => setMostrarFormularioSuperlinea(true)}
                   

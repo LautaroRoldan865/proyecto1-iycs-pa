@@ -10,6 +10,7 @@ import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usu
 import { SuperLineaDto } from '../../dto/superlinea.dto';
 import { PoliticaEliminacionSuperLinea } from '../../domain/services/politica-eliminacion-superlinea';
 import { SuperlineaMapper } from '../../mappers/superlinea.mapper';
+import { PaginacionUtils } from 'src/modules/common/utils/pagination/paginacion-utils';
 
 @Injectable()
 export class SuperlineaService {
@@ -99,8 +100,43 @@ export class SuperlineaService {
         return SuperlineaMapper.toDto(entity);
     }
 
+    async findByDenominacionFiltered(
+        denominacion: string,
+        skip = 0,
+        take = 10,
+        incluirEliminados: boolean = false,
+      ): Promise<{ data: SuperLineaDto[]; total: number }> {
+        this.logger.log(
+          ` ser Buscando o ${denominacion}  skip=${skip}, take=${take}`,
+        );
+        const result = await this.repository.findByDenominacionFiltered(
+          denominacion,
+          skip,
+          take,
+          incluirEliminados,
+        );
+        const data: SuperLineaDto[] = result.data.map((superlinea) =>
+          SuperlineaMapper.toDto(superlinea),
+        );
+        return {
+          data,
+          total: PaginacionUtils.totalItems(result.total),
+        };
+      }
 
-    async remove(id: number, usuarioDeletedId: number) {
+       async findByIdConAuditoria(id: number) {
+          const entity = await this.repository.findByIdConAuditoria(id);
+          if (!entity)
+            throw new NotFoundException(
+              `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
+            );
+          this.logger.warn(`FindOne : ${JSON.stringify(entity)}.`);
+      
+          return entity;
+        }
+
+
+    async remove(id: number) {
 
         const entity = await this.findEntityById(id);
 
@@ -108,7 +144,6 @@ export class SuperlineaService {
 
         await this.repository.remove(
             entity,
-            usuarioDeletedId,
         );
 
         return MessageFrontUtils.createSimple(
