@@ -181,6 +181,7 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
       const {
         costo,
         margen,
+        motivo,
         ...dataSinItems
       } = data;
 
@@ -194,16 +195,19 @@ export class ProductoPersistenceAdapter implements IProductoRepository {
         entity.actualizarCostoYMargen(
           costo,
           margen,
+          motivo || 'Actualización de costo y margen',
           usuario.id,
         );
       } else if (costo !== undefined) {
         entity.actualizarCosto(
           costo,
+          motivo || 'Actualización de costo',
           usuario.id,
         );
       } else if (margen !== undefined) {
         entity.actualizarMargen(
           margen,
+          motivo || 'Actualización de margen',
           usuario.id,
         );
       }
