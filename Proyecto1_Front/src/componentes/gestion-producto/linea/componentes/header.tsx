@@ -1,24 +1,24 @@
 import { PlusCircle, Layers } from "lucide-react";
 import { Button } from "../../../ui/Button";
 import { CardHeader, CardTitle } from "../../../ui/Card";
-import { ImpresionForm } from "../../../herramientas/reutilizables/impresion-form";
+//import { ImpresionForm } from "../../../herramientas/reutilizables/impresion-form";
 import { EstadisticasSimples } from "../../../herramientas/reutilizables/estadisticas-simples";
 
 interface HeaderProps {
   entidadesTotales: number;
   datosLength: number;
-  handleImprimirTodo: () => void;
-  handleImprimirPagina: () => void;
-  paginaActual: number;
+  // handleImprimirTodo: () => void;
+  // handleImprimirPagina: () => void;
+  // paginaActual: number;
   openModal: () => void;
 }
 
 export const Header = ({
   entidadesTotales,
   datosLength,
-  handleImprimirTodo,
-  handleImprimirPagina,
-  paginaActual,
+  //handleImprimirTodo,
+  //handleImprimirPagina,
+  //paginaActual,
   openModal,
 }: HeaderProps) => {
   return (
