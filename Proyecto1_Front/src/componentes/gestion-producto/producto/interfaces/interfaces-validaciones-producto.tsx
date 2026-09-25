@@ -76,7 +76,7 @@ export const schema = (utilizaStockMinimo: boolean) =>
       return value>= costo;
     }),*/
 
-    margen: yup.number().typeError("El margen debe ser un valor númerico").min(0,"El margen mínimo debe ser mayor o igual a 0").max(999, "El margen máximo permitido es de 999").optional().nullable(),
+    margen: yup.number().typeError("El margen debe ser un valor númerico").required("El margen es obligatorio").min(0,"El margen mínimo debe ser mayor o igual a 0").max(999, "El margen máximo permitido es de 999"),
 
     lineaId: yup.number().transform(vacioAUndefined).typeError("La línea es obligatoria.").required("La línea es obligatoria.").min(1, "La línea es obligatoria."),
     

@@ -9,6 +9,7 @@ module.exports = {
     },
     collectCoverageFrom: ['src/**/*.(t|j)s'],
     collectCoverage: true, // Opcional: Muestra cobertura de código
+    
     coverageDirectory: './coverage',
     moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
