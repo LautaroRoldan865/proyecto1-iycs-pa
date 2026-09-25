@@ -8,6 +8,7 @@ export interface FormValues {
   observacion?: string | null;
   stockMinimo?: number;
   utilizaStockMinimo?: boolean;
+  superlineaId?:number;
 }
 
 export interface SublineasEnPayload {
@@ -34,6 +35,11 @@ export const schema = (utilizaStockMinimo: boolean) =>
       otherwise: (schema) => schema.optional(),
     }),
     utilizaStockMinimo: yup.boolean().optional(),
+
+    superlineaId: yup
+    .number()
+    .required("La Super Línea es obligatoria.")
+    .moreThan(0, "Debe seleccionar una Super Línea."),
    
   });
 

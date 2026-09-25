@@ -3,4 +3,8 @@ export interface BaseProductoDto {
     lineaId?: number;
     codigoProveedor?: string;
     denominacion: string;
+    presentacionId?: number;
+    alicuotaIva?: number;
+    costo?: number;
+    margen?: number;
   }

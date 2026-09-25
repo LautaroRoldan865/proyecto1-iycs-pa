@@ -17,6 +17,8 @@ import { LineaDto } from '../../dto/linea.dto';
 import { LineaMapper } from '../../mappers/linea.mapper';
 import { PoliticaEliminacionLinea } from '../../domain/services/politica-eliminacion-linea.service';
 import { Linea } from '../../domain/entities/linea.entity';
+import { LineaValidator } from '../validators/linea.validator';
+import { SuperLinea } from 'src/modules/gestion-productos/superlinea/domain/entities/superlinea.entity';
 
 @Injectable()
 export class LineaService {
@@ -26,8 +28,9 @@ export class LineaService {
     private readonly repository: ILineaRepository,
 
     @Inject(forwardRef(() => PoliticaEliminacionLinea))
-    private readonly validacionesService: PoliticaEliminacionLinea,
+    private readonly validacionService: PoliticaEliminacionLinea,
     private readonly usuarioService: UsuarioService,
+    private lineaValidator: LineaValidator
 
   ) { }
 
@@ -37,10 +40,14 @@ export class LineaService {
     this.logger.log(
       `Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,
     );
+
+    const {superlinea} = await this.lineaValidator.validarYPrepararCreacion(dto);
+
+    this.logger.debug(`SuperLinea obtenida: ${JSON.stringify(superlinea)}`);
     await this.checkDenominacionExists(dto.denominacion, 0);
 
 
-    const entity = await this.repository.create(dto);
+    const entity = await this.repository.create(dto, superlinea);
 
 
     return MessageFrontUtils.createSimple(
@@ -55,12 +62,18 @@ export class LineaService {
 
 
     const linea = await this.findEntityById(id); // Verifica existencia
-    ensureNotSistemaEntity(linea, 'Linea');
-    if (dto.denominacion)
+
+    let superlinea;
+
+    if(dto.superlineaId !== undefined){
+      superlinea = await this.lineaValidator.validarYPrepararEdicion(dto.superlineaId);
+    }
+    
+    if (dto.denominacion !== undefined){
       await this.checkDenominacionExists(dto.denominacion, id);
+    }
 
-
-    const entity = await this.repository.update(id, dto);
+    const entity = await this.repository.update(id, dto, superlinea);
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
       entity.denominacion,
@@ -155,7 +168,7 @@ export class LineaService {
     }
 
     const tieneProductosActivos =
-      await this.validacionesService.tieneProductosActivosParaLinea(id);
+      await this.validacionService.tieneProductosActivosParaLinea(id);
 
     if (tieneProductosActivos) {
       throw new ConflictException(

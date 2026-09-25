@@ -18,8 +18,12 @@ import { Rol } from "./interfaces/generales/interfaces-generales";
 import CambioPreciosMasivo from "./componentes/gestion-producto/precios/cambio-precios-masivo/util/cambio-precios-masivo";
 import DashboardHome from "./pages/dashboard-home";
 
+import ActualizacionMasivaPrecios from "./componentes/gestion-producto/precios/actualizacion-masiva/util/actualizacion-masiva-precios";
+import HistorialPrecios from "./componentes/gestion-producto/precios/historial-precios/util/historial-precios";
 import ListaPrecios from "./componentes/gestion-producto/precios/lista_precios/util/lista-precios";
 import ConsultarPersonal from "./componentes/gestion-organizacion/personal/utils/consultar-personal";
+import ConsultarSuperlineas from "./componentes/gestion-producto/superlinea/utils/consultar-superlinea";
+import ConsultarPresentacion from "./componentes/gestion-producto/presentacion/utils/consultar-presentacion";
 
 function App() {
   return (
@@ -40,8 +44,18 @@ function App() {
               <Route element={<PrivateRoute allowedRoles={[Rol.EMPLEADO, Rol.ADMINISTRADOR]} />}>
                 <Route path="marca" element={<ConsultarMarcas />} />
               </Route>
-     
+              {/* El back solo permite actualizar precios de forma masiva a Root y Administrador */}
+              <Route element={<PrivateRoute allowedRoles={[Rol.ADMINISTRADOR, Rol.ROOT]} />}>
+                <Route path="actualizacion-masiva" element={<ActualizacionMasivaPrecios />} />
+              </Route>
+              {/* El back permite consultar el historial de precios a Root, Administrador y Empleado */}
+              <Route element={<PrivateRoute allowedRoles={[Rol.ADMINISTRADOR, Rol.ROOT, Rol.EMPLEADO]} />}>
+                <Route path="historial-precios" element={<HistorialPrecios />} />
+              </Route>
+
               <Route path="linea" element={<ConsultarLinea />} />
+              <Route path="superlinea" element={<ConsultarSuperlineas/>}/>
+              <Route path="presentacion" element={<ConsultarPresentacion/>}/>
               <Route path="usuario" element={<GestionUsuario />} />
               <Route path="producto" element={<ConsultarProducto />} />
               <Route path="cliente" element={<ConsultarCliente />} />

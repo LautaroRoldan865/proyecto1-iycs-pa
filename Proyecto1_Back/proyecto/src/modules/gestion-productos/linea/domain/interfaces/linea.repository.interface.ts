@@ -3,10 +3,11 @@ import { CreateLineaDto } from '../../dto/create-linea.dto';
 import { UpdateLineaDto } from '../../dto/update-linea.dto';
 import { Linea } from '../entities/linea.entity';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
+import{SuperLinea} from '../../../superlinea/domain/entities/superlinea.entity';
 
 export interface ILineaRepository {
 
-  create(data: CreateLineaDto): Promise<Linea>;
+  create(data: CreateLineaDto, superlinea:SuperLinea): Promise<Linea>;
   findAllFor(denominacion: string): Promise<Linea[]>;
   findAllListado(): Promise<Linea[]>;
   findAllSinSistemaFor(denominacion: string): Promise<Linea[]>;
@@ -24,6 +25,7 @@ export interface ILineaRepository {
   update(
     id: number,
     data: UpdateLineaDto,
+    superlinea?: SuperLinea
   ): Promise<Linea>;
   remove(data: Linea,usuario:Usuario): Promise<Linea>;
 }

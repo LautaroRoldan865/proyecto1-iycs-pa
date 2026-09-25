@@ -1,3 +1,4 @@
+import { BusquedaParcialProducto } from "../componentes/gestion-producto/producto/interfaces/interface-producto-busqueda-parcial";
 import UsuarioService from "../componentes/gestion-usuario/usuario-service";
 import ApiService from "./apiService";
 
@@ -31,6 +32,12 @@ export const createCrudService = <T>(baseEndpoint: string) => ({
   obtenerRapido: (filtros: any) => {
     return ApiService.get(`/${baseEndpoint}/search-by-rapido`, filtros);
   },
+
+
+  obtenerBusquedaParcial: (busqueda: BusquedaParcialProducto) => {
+    return ApiService.get(`/${baseEndpoint}/search-by-partial`, busqueda);
+  },
+
 
   obtenerDesde: (filtros: any, entidades:string) => {
     return ApiService.get(`/${baseEndpoint}/search-${entidades}-by`, filtros);

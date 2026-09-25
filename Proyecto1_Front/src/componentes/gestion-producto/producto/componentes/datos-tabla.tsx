@@ -3,6 +3,7 @@ import { ConsultarProducto, Producto} from "../../../../interfaces/gestion-produ
 import { ActionButton } from "../../../herramientas/reutilizables/action-button";
 import { Info, Pencil, Trash } from "lucide-react";
 import { ProductoActions } from "./producto-action";
+import RegistrarActualizarProductoForm from "../utils/registrar-actualizar-producto";
 
 interface Props {
   productos: ConsultarProducto[];
@@ -25,6 +26,7 @@ export function DatosTabla({
 }: Props) {
   return (
     <div className="hidden lg:block overflow-x-auto">
+ 
       <TablaAGGrid
         columns={columns}
         data={productos}

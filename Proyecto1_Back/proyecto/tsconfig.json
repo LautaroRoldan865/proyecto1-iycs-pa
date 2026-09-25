@@ -9,9 +9,8 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "paths": {
-      "src/*": ["src/*"]
+      "src/*": ["./src/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -20,7 +19,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["node", "express", "multer"],
-    "strictPropertyInitialization": false,
+    "types": ["node", "express", "multer", "jest"],
+    "strictPropertyInitialization": false
   }
 }

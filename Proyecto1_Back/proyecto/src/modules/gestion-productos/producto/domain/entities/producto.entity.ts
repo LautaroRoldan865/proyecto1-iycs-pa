@@ -7,6 +7,7 @@ import {
   ManyToOne,
   Index,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
@@ -18,6 +19,14 @@ import { MonetarioColumn } from 'src/modules/common/decorators/monetario-column.
 import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
 import { PorcentajeColumn } from 'src/modules/common/decorators/porcentaje-column.decorator';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
+import { Presentacion } from 'src/modules/gestion-productos/presentacion/domain/entities/presentacion.entity';
+import { HistorialPrecio } from './historial-precio.entity';
+import { PrecioInvalidoException } from '../exceptions/precio-invalido.exception';
+import { ProductoCalculoHelper } from '../helpers/producto-calculos.helper';
+import { redondearProducto } from 'src/modules/common/utils/number/redondeo';
+import { Precio } from '../value-objects/previo.vo';
+import { PrecioTransformer } from '../../infraestructure/persistence/precio.transformer';
+
 
 @Entity('producto')
 export class Producto {
@@ -68,7 +77,7 @@ export class Producto {
   stockMinimo: number;
 
   @MonetarioColumn()
-  costo?: number;
+  costo: number;
 
   @MonetarioColumn()
   costoDolar?: number;
@@ -84,11 +93,8 @@ export class Producto {
   precioDolar?: number;
   // Precio de venta
 
-  @MonetarioColumn()
-  precio?: number;
-
   @PorcentajeColumn()
-  porcentaje?: number;
+  margen: number;
 
   @Column({ type: 'timestamp', nullable: true })
   fechaCosto?: Date;
@@ -149,12 +155,13 @@ export class Producto {
   @Column({ type: 'int', nullable: true })
   marcaId?: number;
 
-
+  /* ESTOS LOS SACARIAMOS PARA PODER REPRESENTARLOS EN PRESENTACION (VO)*/
   @Column({ default: false })
   utilizaPack: boolean;
 
   @Column({ type: 'int', nullable: true })
   cantidadPorPack: number | null;
+  
 
   @Column({ type: 'text', nullable: true })
   imagen?: string;
@@ -172,4 +179,74 @@ export class Producto {
 
   @Column({ type: 'text', nullable: true })
   codigoReferencia?: string | null;
+
+  // ========== Presentacion ==========
+  @ManyToOne(()=> Presentacion, (presentacion) => presentacion.productos,{cascade:true, eager:true, nullable:true})
+  @JoinColumn({ name: 'presentacion_id' })
+  @Index()
+  presentacion?:Presentacion;
+
+  @Column({ type: 'int', nullable: true })
+  presentacionId?: number;
+
+  @OneToMany(()=> HistorialPrecio, (histPrecio)=> histPrecio.producto)
+  historialPrecios: HistorialPrecio[]
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: PrecioTransformer })
+  precio: Precio
+
+  actualizarPrecioconHistorial(nuevoPrecio:number, motivo: string, usuarioId?: number){
+    if(nuevoPrecio <= 0){
+      throw new PrecioInvalidoException(this.id, this.denominacion, this.precio.getValue(), nuevoPrecio)
+    }
+
+    const precioAnterior = this.precio.getValue()
+    this.costo = ProductoCalculoHelper.calcularNuevoCosto(nuevoPrecio,this.margen)
+    this.fechaCosto = new Date()
+
+    const historial = new HistorialPrecio(precioAnterior,nuevoPrecio,motivo,this,usuarioId)
+
+    this.usuarioUpdated = {id: usuarioId} as Usuario
+    this.updatedAt = new Date()
+    this.precio = Precio.crear(nuevoPrecio);
+
+    return historial
+  }
+
+  actualizarCosto(nuevoCosto:number,motivoAC:string, usuarioId?: number){
+    const precioViejo = this.precio.getValue();
+    this.costo = nuevoCosto;
+    this.updatedAt = new Date();
+    this.usuarioUpdated = {id: usuarioId} as Usuario
+    this.recalcularPrecio()
+    const nuevoHistorial = new HistorialPrecio(precioViejo, this.precio.getValue(), motivoAC, this, usuarioId);
+
+    return nuevoHistorial
+  }
+
+  actualizarMargen(nuevoMargen:number, motivoAM:string, usuarioId?: number){
+    const precioViejo = this.precio.getValue();
+    this.margen = nuevoMargen;
+    this.updatedAt = new Date();
+    this.usuarioUpdated = {id: usuarioId} as Usuario
+    this.recalcularPrecio()
+    const nuevoHistorial = new HistorialPrecio(precioViejo, this.precio.getValue(), motivoAM, this, usuarioId);
+    return nuevoHistorial;
+  }
+
+  private recalcularPrecio(): void {
+    const nuevoPrecio = ProductoCalculoHelper.calcularPrecio( this.costo, this.margen,);
+    this.precio = Precio.crear(nuevoPrecio);
+  }
+
+  actualizarCostoYMargen( nuevoCosto: number, nuevoMargen: number, motivoACM:string, usuarioId?: number) {
+    const precioViejo = this.precio.getValue();
+    this.costo = nuevoCosto;
+    this.margen = nuevoMargen;
+    this.updatedAt = new Date();
+    this.usuarioUpdated = { id: usuarioId } as Usuario;
+    this.recalcularPrecio();
+    const nuevoHistorial = new HistorialPrecio(precioViejo, this.precio.getValue(), motivoACM, this, usuarioId);
+    return nuevoHistorial;
+  }
 }
