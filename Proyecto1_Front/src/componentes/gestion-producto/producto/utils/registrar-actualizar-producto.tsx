@@ -115,6 +115,7 @@ export default function RegistrarActualizarProductoForm({
   useState(false);
 
   const [mostrarModalPrecio, setMostrarModalPrecio] = useState(false);
+  const [motivoActualizacionPrecio, setMotivoActualizacionPrecio] = useState("");
 
   const [itemProdAlternativoSinAgregar, setItemProdAlternativoSinAgregar] = useState(false);
 
@@ -210,6 +211,7 @@ export default function RegistrarActualizarProductoForm({
           const payload = {
             ...datos,
             usuarioUpdatedId: usuarioId,
+             motivo: motivoActualizacionPrecio || undefined,
           };
 
           response = await ProductoService.actualizar(producto.id, payload);
@@ -420,7 +422,7 @@ export default function RegistrarActualizarProductoForm({
           })
         }
         maxDigits={9}
-        disabled={producto && producto.sistema > 0 ? true : false}
+        disabled={!!producto}
       />
 
       <PorcentajeInput
@@ -433,7 +435,7 @@ export default function RegistrarActualizarProductoForm({
             shouldDirty: true,
           })
         }
-        disabled={producto && producto.sistema > 0 ? true : false}
+        disabled={!!producto}
       />
 
       <PriceInput
@@ -448,7 +450,11 @@ export default function RegistrarActualizarProductoForm({
       <Button
         type="button"
         onClick={handleCalcularPrecio}
-        disabled={!watch("costo") || watch("margen") === undefined}
+        disabled={
+          !!producto ||
+          !watch("costo") ||
+          watch("margen") === undefined
+        }
         className="w-full"
       >
         Calcular precio
@@ -632,9 +638,9 @@ export default function RegistrarActualizarProductoForm({
                 shouldDirty: true,
               });
 
+              setMotivoActualizacionPrecio(datos.motivo);
               setMostrarModalPrecio(false);
 
-              onSuccess(mensaje);
             }}
           />
         )}
